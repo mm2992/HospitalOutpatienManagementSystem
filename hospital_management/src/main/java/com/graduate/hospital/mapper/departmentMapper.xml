@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.DepartmentMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Department">
+    <id column="dept_id" jdbcType="VARCHAR" property="deptId" />
+    <result column="dept_name" jdbcType="VARCHAR" property="deptName" />
+    <result column="dept_leader" jdbcType="VARCHAR" property="deptLeader" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    dept_id, dept_name, dept_leader
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from department
+    where dept_id = #{deptId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from department
+    where dept_id = #{deptId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Department">
+    insert into department (dept_id, dept_name, dept_leader
+      )
+    values (#{deptId,jdbcType=VARCHAR}, #{deptName,jdbcType=VARCHAR}, #{deptLeader,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Department">
+    insert into department
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="deptId != null">
+        dept_id,
+      </if>
+      <if test="deptName != null">
+        dept_name,
+      </if>
+      <if test="deptLeader != null">
+        dept_leader,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="deptId != null">
+        #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="deptName != null">
+        #{deptName,jdbcType=VARCHAR},
+      </if>
+      <if test="deptLeader != null">
+        #{deptLeader,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Department">
+    update department
+    <set>
+      <if test="deptName != null">
+        dept_name = #{deptName,jdbcType=VARCHAR},
+      </if>
+      <if test="deptLeader != null">
+        dept_leader = #{deptLeader,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where dept_id = #{deptId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Department">
+    update department
+    set dept_name = #{deptName,jdbcType=VARCHAR},
+      dept_leader = #{deptLeader,jdbcType=VARCHAR}
+    where dept_id = #{deptId,jdbcType=VARCHAR}
+  </update>
+
+  <select id="getAllDept" resultMap="BaseResultMap">
+    select
+    *
+    from department
+  </select>
+</mapper>

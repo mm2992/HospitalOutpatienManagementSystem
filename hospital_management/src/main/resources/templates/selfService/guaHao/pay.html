@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>在线支付</title>
+    <link th:rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    <link th:href="@{/static/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet" />
+    <script th:src="@{/static/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/static/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bs_pagination/jquery.bs_pagination.min.css">
+    <script type="text/javascript"  src="/static/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript" src="/static/bs_pagination/en.js"></script>
+</head>
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#searchBtn").click(function () {
+            pageList(1,2);
+        })
+
+        // 点击全选按钮选择全部数据
+        $("#qx").click(function () {
+            $("input[name=xz]").prop("checked", this.checked)
+           // if ($("#qx").is(":checked")) {
+                calculateBill()
+            /*}else {
+                $("#money")[0].innerText=0
+            }*/
+
+               // $("input[name=xz]").prop("checked",this.checked)
+
+        })
+
+        //选中所有数据则全选按钮被选中
+        $("#prePage").on("click",$("input[name=xz]"),function () {
+            $("#qx").prop("checked",$("input[name=xz]").length==$("input[name=xz]:checked").length)
+        })
+
+        // 点击支付按钮支付
+        $("#payBtn").click(function () {
+            pay();
+        })
+
+    })
+
+    //查询药方信息并分页
+    function pageList(pageNo,pageSize) {
+        // alert(123)
+        var patientId=$("#idCard").val().trim();
+        $.ajax({
+            url:"/prescription/getById/"+patientId+"/0",
+            data:{
+                "pageNo":pageNo,
+                "pageSize":pageSize
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+               $.each(resp.list,function (i,n) {
+                   html+='<tr>'
+                   html+='<td><input type="checkbox" name="xz" value="'+n.drugId+'" onclick="calculateBill()"></td>'
+                   html+='<td>'+n.drugId+'</td>'
+                   html+='<td>'+n.drugName+'</td>'
+                   html+='<td>'+n.quantity+'</td>'
+                   html+='<td>'+n.drugPrice+'</td>'
+                   html+='<td>'+n.totalPrice+'</td>'
+                   // html+='<td><button class="btn btn-success btn-sm">支付</button></td>'
+                   html+='</tr>'
+               })
+
+                $("#prePage").html(html);
+
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#prePageList").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                        $("#qx").attr("checked",false)
+                    }
+                });
+
+
+            }
+
+        })
+    }
+
+    //计算账单的方法
+    function calculateBill() {
+        // alert(123)
+        var patientId=$("#idCard").val().trim();
+        var xzs=$("input[name=xz]:checked");
+        if (xzs.length==0){
+            $("#money")[0].innerText=0;
+        }else {
+            var params="patientId="+patientId+"&";
+            for (var i=0;i<xzs.length;i++){
+                params+="drugId="+$(xzs[i]).val();
+                if (i!=xzs.length-1){
+                    params+="&"
+                }
+            }
+            // alert(params)
+            $.ajax({
+                url:"/prescription/calculateBill?"+params,
+                dataType: "json",
+                type: "post",
+                success:function (resp) {
+                    $("#money")[0].innerText=resp
+                }
+
+            })
+
+        }
+
+
+    }
+
+
+    //支付的方法
+    function pay() {
+        //alert(123)
+        var money=$("#money").text();
+        var xzs="";
+        var patientId="";
+        var params="";
+        if (money==0){
+            alert("请选择本次结算的药品...")
+        }else {
+            if (confirm("确定支付吗？")){
+                xzs=$("input[name=xz]:checked");
+                patientId=$("#idCard").val().trim();
+                for (var i=0;i<xzs.length;i++){
+                    params+="drugId="+$(xzs[i]).val()+"&";
+
+                }
+                params+="patientId="+patientId+"&money="+money
+                $.ajax({
+                    url:"/prescription/pay?"+params,
+                    dataType:"text",
+                    type:"put",
+                    success:function (resp) {
+                        alert(resp)
+                        if (resp=="支付成功！"){
+                            pageList(1,2)
+                            $("#qx").attr("checked",false);
+                            $("#money")[0].innerText=0;
+                        }
+                    }
+
+                })
+            }
+        }
+
+
+    }
+
+
+
+</script>
+<body>
+    <div th:id="'content'" class="col-sm-offset-2 col-sm-12" style="margin-top: -252px">
+<!--        <div class="col-sm-10">-->
+            <div class="panel panel-info" style="width: 70%">
+                <div class="panel-heading"><h4>在线缴费</h4></div>
+                <div class="panel-body">
+                    <div style="float: left;margin-left: 245px">
+                        <input type="text" class="form-control" id="idCard" placeholder="请输入身份证号..." style="width: 100%;" ></input>
+                    </div>
+                    <div style="float: right;margin-right: 260px">
+                        <button class="btn btn-primary" th:id="'searchBtn'">查询</button>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <hr>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <table class="table table-bordered table-hover">
+                            <thead style="text-align: center;font-size: 15px;font-weight: bolder" >
+                                <tr class="success">
+                                    <td><input type="checkbox" id="qx" ></td>
+                                    <td>药品编号</td>
+                                    <td>药品名称</td>
+                                    <td>数量</td>
+                                    <td>单价</td>
+                                    <td>总价</td>
+<!--                                    <td>操作</td>-->
+                                </tr>
+                            </thead>
+                            <tbody style="text-align: center" th:id="'prePage'">
+
+                            </tbody>
+
+                            <tfoot style="text-align: center">
+                                <tr>
+                                    <td>共计：<span th:id="'money'" style="color: red">0</span>&nbsp;元</td>
+                                    <td><button class="btn btn-sm btn-success" th:id="'payBtn'">支付</button></td>
+                                </tr>
+                            </tfoot>
+
+                        </table>
+
+                        <div th:id="'prePageList'">
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+<!--        </div>-->
+
+    </div>
+</body>
+</html>

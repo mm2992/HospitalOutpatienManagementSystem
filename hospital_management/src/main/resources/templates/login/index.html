@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link th:rel="'stylesheet'" th:href="@{/css/bootstrap.min.css}">
+    <script th:src="@{/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<script type="text/javascript">
+
+    $(function () {
+
+        $("#userId").focus();
+        $("#userId").focus(function () {
+            $("#message")[0].innerText="";
+        })
+        $("#loginBtn").click(function () {
+            var userId=$("#userId").val().trim();
+            var password=$("#userPwd").val().trim();
+            if (userId==""||password==""){
+                $("#message")[0].innerText="用户名和密码都不能为空！";
+            }else {
+                $.ajax({
+                    url: "/login",
+                    data: {
+                        userId, password
+                    },
+                    async:false,
+                    dataType: "json",
+                    type: "post",
+                    success: function (resp) {
+                        if (resp==1){
+                            window.location.href="/managerIndex";
+                        }if (resp==0){
+                            $("#message")[0].innerText="用户名或密码错误!";
+                        }if(resp==3){
+                            window.location.href="/wareHouseIndex"
+                        }if (resp==4){
+                            window.location.href="/doctorIndex"
+                        }if (resp==2){
+                            window.location.href="/nurseIndex"
+                        }
+
+                    }
+                })
+            }
+        })
+
+        $("#returnBtn").click(function () {
+            window.location.href="/";
+        })
+
+    })
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4" style="margin-top: 200px">
+            <form>
+                <div class="form-group">
+                    <label for="userId">工号:</label>
+                    <input type="text" class="form-control" id="userId" placeholder="请输入您的工号">
+                </div>
+                <div class="form-group">
+                    <label for="userPwd">密码:</label>
+                    <input type="password" class="form-control" id="userPwd" placeholder="请输入您的密码">
+                </div>
+            </form>
+            <span style="color: red;font-size: 15px" id="message"></span>
+            <div style="margin-top: 30px">
+                <button class="btn btn-primary  btn-block" id="loginBtn">登录系统</button>
+            </div>
+            <div style="margin-top: 10px">
+            <button class="btn btn-success btn-block" id="returnBtn">返回首页</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

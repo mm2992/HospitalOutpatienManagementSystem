@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.ManufacturerMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Manufacturer">
+    <id column="mane_id" jdbcType="VARCHAR" property="maneId" />
+    <result column="mane_name" jdbcType="VARCHAR" property="maneName" />
+    <result column="mane_address" jdbcType="VARCHAR" property="maneAddress" />
+    <result column="mane_tel" jdbcType="VARCHAR" property="maneTel" />
+    <result column="mane_email" jdbcType="VARCHAR" property="maneEmail" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    mane_id, mane_name, mane_address, mane_tel, mane_email
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from manufacturer
+    where mane_id = #{maneId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from manufacturer
+    where mane_id = #{maneId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Manufacturer">
+    insert into manufacturer (mane_id, mane_name, mane_address,
+      mane_tel, mane_email)
+    values (#{maneId,jdbcType=VARCHAR}, #{maneName,jdbcType=VARCHAR}, #{maneAddress,jdbcType=VARCHAR},
+      #{maneTel,jdbcType=VARCHAR}, #{maneEmail,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Manufacturer">
+    insert into manufacturer
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="maneId != null">
+        mane_id,
+      </if>
+      <if test="maneName != null">
+        mane_name,
+      </if>
+      <if test="maneAddress != null">
+        mane_address,
+      </if>
+      <if test="maneTel != null">
+        mane_tel,
+      </if>
+      <if test="maneEmail != null">
+        mane_email,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="maneId != null">
+        #{maneId,jdbcType=VARCHAR},
+      </if>
+      <if test="maneName != null">
+        #{maneName,jdbcType=VARCHAR},
+      </if>
+      <if test="maneAddress != null">
+        #{maneAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="maneTel != null">
+        #{maneTel,jdbcType=VARCHAR},
+      </if>
+      <if test="maneEmail != null">
+        #{maneEmail,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Manufacturer">
+    update manufacturer
+    <set>
+      <if test="maneName != null">
+        mane_name = #{maneName,jdbcType=VARCHAR},
+      </if>
+      <if test="maunAddress != null">
+        mane_address = #{maneAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="maneTel != null">
+        mane_tel = #{maneTel,jdbcType=VARCHAR},
+      </if>
+      <if test="manuEmail != null">
+        mane_email = #{maneEmail,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where mane_id = #{maneId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Manufacturer">
+    update manufacturer
+    set mane_name = #{maneName,jdbcType=VARCHAR},
+      mane_address = #{maneAddress,jdbcType=VARCHAR},
+      mane_tel = #{maneTel,jdbcType=VARCHAR},
+      mane_email = #{maneEmail,jdbcType=VARCHAR}
+    where mane_id = #{maneId,jdbcType=VARCHAR}
+  </update>
+
+  <select id="getAllManufacturer" resultType="com.graduate.hospital.model.Manufacturer">
+    select * from manufacturer
+  </select>
+
+<!--  根据名字查id-->
+  <select id="getManeIdByName" resultType="java.lang.String">
+    select mane_id from manufacturer where mane_name=#{maneName}
+  </select>
+</mapper>

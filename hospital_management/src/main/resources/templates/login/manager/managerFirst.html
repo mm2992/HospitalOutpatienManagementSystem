@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员</title>
+    <link th:rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    <link th:href="@{/static/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet" />
+    <script th:src="@{/static/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/static/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bs_pagination/jquery.bs_pagination.min.css">
+    <script type="text/javascript"  src="/static/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript" src="/static/bs_pagination/en.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+    $(function () {
+        $("#content").load("/warningPage");
+    })
+</script>
+<!--导航条-->
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><font style=" color: #2b669a;font-size: 30px;font-weight: revert; ">欢迎使用医院门诊管理系统</font></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">欢迎:<span th:text="${#session.getAttribute('user').userName}"></span></a></li>
+                <li class="dropdown">
+                    <a  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">设置 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:$('#content').load('/editUser')">编辑资料</a></li>
+                        <li><a th:href="@{'/loginIndex'}">退出系统</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="row">
+    <!--    左侧导航栏-->
+    <div class="col-sm-2">
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingOne" style="text-align: center">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
+                           aria-expanded="true" aria-controls="collapseOne">
+                            普通用户管理
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/addUser')" class="btn btn-info btn-block">用户添加</a>
+                            </li>
+                        </ul>
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/viewUser')" class="btn btn-info btn-block">查看用户信息</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingTwo" style="text-align: center">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo"
+                           aria-expanded="true" aria-controls="collapseTwo">
+                            医生管理
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseTwo" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/addDoctor')" class="btn btn-info btn-block">医生添加</a>
+                            </li>
+                        </ul>
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/viewDoctor')" class="btn btn-info btn-block">查看医生信息</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+<!--    主界面-->
+<!--        警告框-->
+        <div id="content" class="col-sm-9">
+
+        </div>
+</div>
+</body>
+</html>

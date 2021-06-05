@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script type="text/javascript">
+    $(function () {
+
+        $("#outTime").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+
+        $("#searchBtn").click(function () {
+
+
+            pageList(1,2);
+        })
+    })
+
+    function pageList(pageNo,pageSize) {
+        var drugId=$("#drugId").val().trim();
+        var drugName=$("#drugName").val().trim();
+        var reason=$("#reason").val();
+        var outTime=$("#outTime").val().trim();
+
+        $.ajax({
+            url:"/outRecord/pageList",
+            data:{
+                "drugId":drugId,
+                "drugName":drugName,
+                "reason":reason,
+                "outTime":outTime,
+                "pageNo":pageNo,
+                "pageSize":pageSize
+            },
+            type:"get",
+            dataType:"json",
+            success:function (resp) {
+                // alert(resp.count)
+                var html="";
+                var m=0;
+
+                $.each(resp.list,function (i,n) {
+
+
+                    m+=1;
+                    html+='<tr>'
+                    html+='<td>'+m+'</td>'
+                    html+='<td>'+n.drugId+'</td>'
+                    html+='<td>'+n.drugName+'</td>'
+                    html+='<td>'+n.maneName+'</td>'
+                    html+='<td>'+n.quantity+'</td>'
+                    html+='<td>'+n.reason+'</td>'
+                    html+='<td>'+n.outTime+'</td>'
+                    html+='<td>'+n.operateBy+'</td>'
+                    html+='<td>'+n.remark+'</td>'
+                    html+='<td><button class="btn btn-danger" onclick="delRecord('+n.recordId+')">删除</button></td>'
+                    html+='</tr>'
+                })
+
+                $("#outRecordPage").html(html);
+
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#outPageList").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+
+                    }
+                });
+            }
+        })
+    }
+    
+    function delRecord(recordId) {
+       // alert(recordId)
+        //alert(drugId)
+        if (confirm("确定删除吗？")){
+            $.ajax({
+                url:"/outRecord/delRecord/"+recordId,
+                dataType: "json",
+                type: "delete",
+                success:function (resp) {
+                    if (resp){
+                        pageList(1,2)
+                    }else {
+                        alert("删除失败！")
+                    }
+                }
+            })
+
+        }
+
+    }
+</script>
+<body>
+    <div th:id="'content'">
+        <div class="panel panel-primary">
+            <!-- Default panel contents -->
+            <div class="panel-heading">出库记录查询</div>
+            <div class="panel-body" th:style="'margin-bottom: 20px;margin-top: 20px'">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="exampleInputName2">药品编号</label>
+                        <input type="text" class="form-control" id="drugId" placeholder="药品编号">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail2">药品名称</label>
+                        <input type="email" class="form-control" id="drugName" placeholder="药品名称">
+                    </div>
+                    <div class="form-group ">
+                        <label for="exampleInputEmail2">出库原因</label>
+                        <select class="form-control" id="reason">
+                            <option value="" >全部</option>
+                            <option value="退货" >退货</option>
+                            <option value="售卖" >售卖</option>
+                        </select>
+                    </div>
+                    <div class="form-group ">
+                        <label for="exampleInputEmail2">出库日期</label>
+                        <input type="email" class="form-control" id="outTime" placeholder="出库日期">
+                    </div>
+<!--                    <button  class="btn btn-default" th:id="'searchBtn'">搜索</button>-->
+                </form>
+                <div style="float: right;margin-top: -34px">
+                    <button  class="btn btn-default" th:id="'searchBtn'">搜索</button>
+                </div>
+                <div>
+                    <hr>
+                </div>
+
+                <div>
+                    <table class="table table-hover table-striped ">
+                        <thead style="text-align: center;font-weight: bolder">
+                            <tr>
+                                <td>#</td>
+                                <td>药品编号</td>
+                                <td>药品名称</td>
+                                <td>生产厂商</td>
+                                <td>出库数量</td>
+                                <td>出库原因</td>
+                                <td>出库时间</td>
+                                <td>操作员</td>
+                                <td>备注</td>
+                                <td>操作</td>
+                            </tr>
+                        </thead>
+                        <tbody th:id="'outRecordPage'">
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:id="outPageList">
+
+                </div>
+
+            </div>
+
+
+
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+
+
+<script type="text/javascript">
+    $(function () {
+        // 绑定日历组件
+        $(".time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+
+        // 页面加载完毕自动获得焦点
+        $("#userId").focus();
+
+        isEmpty();
+
+        // 页面加载完毕后自动填充职位的下拉列表
+        addPosition();
+        addUser();
+
+    })
+
+    // 获取所有职位的方法
+    function addPosition() {
+            $.ajax({
+                url:"/user/selectAllPosition",
+                dataType:"json",
+                type:"post",
+                success:function (resp) {
+                    // alert(resp)
+                    var html="";
+                    $.each(resp,function (i,n) {
+                        html+="<option value="+n.userCategory+">"+n.userPosition+"</option>"
+                    })
+                    $("#userPosition").html(html);
+                }
+            })
+    }
+
+    //员工编号栏失去焦点后判断是否为空
+    function isEmpty () {
+        $("#userId").blur(function () {
+            //alert($("#userId").val());
+            if ($("#userId").val().trim()==""){
+                document.getElementById("idSpan").innerText="员工编号不能为空！"
+            }
+
+        })
+
+        $("#password").blur(function () {
+            if ($("#password").val().trim()==""){
+                document.getElementById("pwdSpan").innerText="初始密码不能为空！"
+            }
+        })
+
+        // 获取焦点后清空提示信息
+        $("#userId").focus(function () {
+
+                document.getElementById("idSpan").innerText="";
+
+        })
+
+        $("#password").focus(function () {
+                document.getElementById("pwdSpan").innerText="";
+
+        })
+    }
+
+    // 点击添加提交添加信息的方法
+    function addUser() {
+        $("#addBtn").click(function () {
+            // alert(111)
+            if ($("#userId").val().trim()!=""&&$("#password").val().trim()!=""&&$("#entryTime").val().trim()!="") {
+                $.ajax({
+                    url: "/user/addUser",
+                    data: {
+                        "userId":$("#userId").val().trim(),
+                        "password":$("#password").val().trim(),
+                        "entryTime":$("#entryTime").val().trim(),
+                        "userCategory":$("#userPosition").val().trim()
+
+                    },
+                    dataType: "text",
+                    type: "post",
+                    success: function (resp) {
+                        alert(resp);
+                    }
+                })
+            }else {
+                alert("请完整填写注册信息！")
+            }
+        })
+    }
+</script>
+
+    <!--    主界面-->
+    <div id="content">
+        <div >
+            <div class="panel panel-default">
+                <div class="panel-heading">添加用户</div>
+                <div class="panel-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="userId">员工编号：</label>
+                            <input type="text" class="form-control" id="userId" placeholder="请输入员工编号">
+                            <span id="idSpan" style="color: red;font-size: 15px"></span>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="password">初始密码：</label>
+                            <input type="password" class="form-control" id="password" placeholder="请设置初始密码">
+                            <span id="pwdSpan" style="color: red;font-size: 15px"></span>
+                        </div>
+
+                        <div class="form-group col-sm-4" style="float: left">
+                            <label for="userPosition">职位：</label>
+                            <select class="form-control" id="userPosition">
+
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-4 col-sm-offset-3">
+                            <label for="entryTime">入职时间：</label>
+                            <input type="text" class="form-control time" id="entryTime" placeholder="请选择该员工的入职时间">
+                        </div>
+
+                        <div class="col-sm-3" style="margin-top: 5%;float:right;margin-right: 150px">
+                            <button class="btn btn-danger btn-block" type="reset">取消</button>
+                        </div>
+                    </form>
+                    <div class="col-sm-3 " style="margin-top: 5%;float: left;margin-left: 100px;">
+                        <button class="btn btn-info btn-block" id="addBtn">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+

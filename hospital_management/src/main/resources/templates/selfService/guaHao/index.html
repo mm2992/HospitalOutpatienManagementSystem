@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>自助服务</title>
+    <link th:rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    <script th:src="@{/static/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/static/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<!--    导航条-->
+    <nav class="navbar navbar-default navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#"><font style=" color: green;font-size: 30px;font-weight: revert; ">欢迎使用自助服务系统</font></a>
+            </div>
+
+            <ul class="nav navbar-nav navbar-right" style="margin-right: 30px">
+                <li><a th:href="@{/}">退出</a></li>
+            </ul>
+        </div>
+    </nav>
+
+<!--    页面主体-->
+<div class="row">
+ <!--    导航列表-->
+    <div class="col-sm-2">
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingOne" style="text-align: center;background-color: darkcyan">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            挂号服务
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingOne">
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/guahao');" class="btn btn-info btn-block">在线挂号</a></li>
+                        </ul>
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/watchGuaHaoInfo');" class="btn btn-info btn-block">查看挂号信息</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingTwo" style="text-align: center;background-color: darkcyan">
+                    <h4 class="panel-title">
+                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            账单结算
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/pay');" class="btn btn-info btn-block">在线缴费</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingThree" style="text-align: center;background-color: darkcyan">
+                    <h4 class="panel-title">
+                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                           账户管理
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item"><a href="javascript:$('#content').load('/reCharge');" class="btn btn-info btn-block">在线充值</a></li>
+                            <ul class="list-group">
+                                <li class="list-group-item"><a href="javascript:$('#content').load('/refund');" class="btn btn-info btn-block">退费/注销</a></li>
+                            </ul>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--    页面详细内容-->
+    <div id="content">
+        <div class="col-sm-4 col-sm-offset-2">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <strong>提示!</strong> 请选择您要办理的业务类型. . .
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 5907443250
+    url: jdbc:mysql://localhost:3306/graduateproject?serverTimezone=GMT%2B8&useSSL=false
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+

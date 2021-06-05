@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>自助服务</title>
+    <link th:rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    <script th:src="@{/static/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/static/js/bootstrap.min.js}"></script>
+</head>
+<body>
+
+
+<script type="text/javascript">
+
+    $(function () {
+        // 显示所有科室
+        showDepartment();
+        // 身份证号码输入框默认选中，再次被选中清空提示信息
+        $("#card").focus();
+        //重新获得焦点后隐藏提示信息
+        hideMessage();
+        // 显示提示信息
+        showIdMessage()
+        //提交表单
+        register();
+
+
+    })
+
+    // 定义一个页面刷新后显示挂号科室列表的方法
+    function showDepartment() {
+        $.ajax({
+            url:"self/getDept",
+            type:"post",
+            dataType:"json",
+            success:function (resp) {
+                var html="";
+                $.each(resp,function (i,n) {
+                    html+='<option value='+n.deptId+'>'+n.deptName+'</option>'
+                })
+                $("#selectOffice").html(html);
+
+            }
+        })
+    }
+
+    // 定义一个返回挂号输入信息的反馈
+    function showIdMessage() {
+        $("#card").blur(function () {
+            var card=document.getElementById("card");
+            var id=card.value.trim();
+            var regExp=/^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            var flag=regExp.test(id);
+             var message="";
+             if (id!="") {
+                 if (!flag || id.length != 18) {
+                     message = "身份证号码格式不正确！";
+                 }
+             }else {
+                  message="身份证号码不能为空！"
+              }                            
+            var idMessage=document.getElementById("idMessage");
+            idMessage.innerText=message;                       
+        })
+
+        $("#name").blur(function () {
+            var name=document.getElementById("name").value.trim();
+            if (name==""){
+                 document.getElementById("nameMessage").innerText="姓名不能为空";
+            }
+
+        })
+    }
+
+    // 重新获得焦点后提示信息隐藏
+       function hideMessage() {
+           $("#card").focus(function () {
+               document.getElementById("idMessage").innerText="";
+           });
+
+           $("#name").focus(function () {
+               document.getElementById("nameMessage").innerText="";
+           });
+       }
+
+    // 给立即挂号按钮绑定提交挂号信息时间
+    function register() {
+        $("#registerBtn").click(function () {
+           var idCard=$("#card").val().trim();
+            var patientName=$("#name").val().trim();
+            var patientSex=$("#sex").val();
+            var deptId=$("#selectOffice").val();
+            var regExp=/^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            if (regExp.test(idCard)&&patientName!="") {
+                $.ajax({
+                    url: "self/setPatient",
+                    data: {
+                        idCard, patientName, patientSex, deptId
+                    },
+                    dataType: "text",
+                    type: "post",
+                    success: function (resp) {
+                        //alert(resp)
+                        if ("挂号成功" == resp.substring(0,4)) {
+                            $("#success-message")[0].innerText = resp;
+                        } else {
+                            var mesg = "<p style='color: red;font-size: 20px'>" + resp + "</p>"
+                            $("#message-div").html(mesg)
+                        }
+                        $("#register-success").modal('show');
+                    }
+                })
+            }else {
+                alert("请再次核对您的个人信息是否填写无误！")
+            }
+
+        })
+    }
+
+    // 挂号完成去充值
+    function toReChange() {
+        $("#register-success").modal("hide");
+        $(".modal-backdrop").remove();
+        $("body").removeClass('modal-open')
+
+        $("#content").load("/reCharge")
+    }
+</script>
+<!--    页面详细内容-->
+    <div id="content">
+        <div class="col-sm-10">
+            <div class="panel panel-info" style="width: 70%">
+                <div class="panel-heading"><h4>在线挂号</h4></div>
+                <div class="panel-body">
+                    <!--表单-->
+                    <form>
+                        <div class="form-group">
+                            <label for="card">身份证号</label>
+                            <input type="text" class="form-control" id="card" placeholder="身份证号" />
+                            <span id="idMessage" style="color: red;font-size: 15px"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input type="text" class="form-control" id="name" placeholder="姓名">
+                            <span id="nameMessage" style="color: red;font-size: 15px"></span>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="sex">性别</label>
+                            <select class="form-control" id="sex">
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectOffice">挂号科室</label>
+                            <select class="form-control" id="selectOffice">
+
+                            </select>
+                        </div>
+                        <div style="float: right;margin-right: 77%">
+                            <button class="btn btn-success" id="resetBtn" type="reset">重置信息</button>
+                        </div>
+                    </form>
+                    <button class="btn btn-primary" id="registerBtn" >立即挂号</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--    挂号成功模态框-->
+    <div class="modal fade " id="register-success" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content" style="width: 90%;height: 90%;text-align: center" id="message-div">
+                <p id="success-message" style="color: green;font-size: 25px"></p>
+                <button class="btn btn-success" onclick="toReChange()">去充值</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

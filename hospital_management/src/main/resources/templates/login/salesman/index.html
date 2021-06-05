@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>药方护士</title>
+    <link th:rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    <link th:href="@{/static/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet" />
+    <script th:src="@{/static/js/jquery-1.11.1-min.js}"></script>
+    <script th:src="@{/static/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js}"></script>
+    <script type="text/javascript" th:src="@{/static/bootstrap-datetimepicker-master/locale/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bs_pagination/jquery.bs_pagination.min.css">
+    <script type="text/javascript"  src="/static/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript" src="/static/bs_pagination/en.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default" style="background-color: skyblue">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><font style=" color: #2b669a;font-size: 30px;font-weight: revert; ">欢迎使用医院门诊管理系统</font></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">欢迎:<span th:text="${#session.getAttribute('user').userName}"></span></a></li>
+                <li class="dropdown">
+                    <a  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                        aria-expanded="false">设置 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:$('#content').load('/editUser')">编辑资料</a></li>
+                        <li><a th:href="@{'/loginIndex'}">退出系统</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="row">
+    <!--    左侧导航栏-->
+    <div class="col-sm-2">
+        <div class="list-group" style="text-align: center">
+            <a href="javascript:$('#content').load('/takeMedicine')" class="list-group-item active">
+               取药
+            </a>
+            <a href="javascript:$('#content').load('/printMsg')" class="list-group-item ">打印药方信息</a>
+
+        </div>
+    </div>
+
+    <!--    主界面-->
+    <!--        警告框-->
+    <div th:id="'content'" class="col-sm-9">
+
+    </div>
+</div>
+</body>
+</html>

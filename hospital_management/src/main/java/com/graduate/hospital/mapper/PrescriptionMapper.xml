@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.PrescriptionMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Prescription">
+    <id column="patient_id" jdbcType="VARCHAR" property="patientId" />
+    <id column="drug_id" jdbcType="VARCHAR" property="drugId" />
+    <result column="drug_name" jdbcType="VARCHAR" property="drugName" />
+    <result column="quantity" jdbcType="INTEGER" property="quantity" />
+    <result column="drug_price" jdbcType="DOUBLE" property="drugPrice" />
+    <result column="total_price" jdbcType="DOUBLE" property="totalPrice" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="doctor_name" jdbcType="VARCHAR" property="doctorName" />
+    <result column="doctor_order" jdbcType="VARCHAR" property="doctorOrder" />
+    <result column="out_status" jdbcType="VARCHAR" property="outStatus" />
+
+
+  </resultMap>
+  <sql id="Base_Column_List">
+    patient_id, drug_id, drug_name, quantity, drug_price, total_price, status, doctor_name,doctor_order,out_status
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="com.graduate.hospital.model.Prescription" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from prescription
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+      and drug_id = #{drugId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.graduate.hospital.model.Prescription">
+    delete from prescription
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+      and drug_id = #{drugId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Prescription">
+    insert into prescription (patient_id, drug_id, drug_name, 
+      quantity, drug_price, total_price, 
+      status, doctor_name,doctor_order,out_status)
+    values (#{patientId,jdbcType=VARCHAR}, #{drugId,jdbcType=VARCHAR}, #{drugName,jdbcType=VARCHAR}, 
+      #{quantity,jdbcType=INTEGER}, #{drugPrice,jdbcType=DOUBLE}, #{totalPrice,jdbcType=DOUBLE}, 
+      #{status,jdbcType=INTEGER}, #{doctorName,jdbcType=VARCHAR},#{doctorOrder,jdbcType=VARCHAR},#{outStatus,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Prescription">
+    insert into prescription
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="patientId != null">
+        patient_id,
+      </if>
+      <if test="drugId != null">
+        drug_id,
+      </if>
+      <if test="drugName != null">
+        drug_name,
+      </if>
+      <if test="quantity != null">
+        quantity,
+      </if>
+      <if test="drugPrice != null">
+        drug_price,
+      </if>
+      <if test="totalPrice != null">
+        total_price,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="doctorName != null">
+        doctor_name,
+      </if>
+      <if test="doctorOrder != null">
+        doctor_order,
+      </if>
+      <if test="outStatus != null">
+        out_status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="patientId != null">
+        #{patientId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugId != null">
+        #{drugId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugName != null">
+        #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="quantity != null">
+        #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="drugPrice != null">
+        #{drugPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="totalPrice != null">
+        #{totalPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="doctorName != null">
+      #{doctorName,jdbcType=VARCHAR},
+    </if>
+      <if test="doctorOrder != null">
+        #{doctororder,jdbcType=VARCHAR},
+      </if>
+      <if test="outStatus != null">
+        #{outStatus,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Prescription">
+    update prescription
+    <set>
+      <if test="drugName != null">
+        drug_name = #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="quantity != null">
+        quantity = #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="drugPrice != null">
+        drug_price = #{drugPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="totalPrice != null">
+        total_price = #{totalPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="doctorName != null">
+      doctor_name = #{doctorName,jdbcType=VARCHAR},
+    </if>
+      <if test="doctorOrder!= null">
+        doctor_order = #{doctorOrder,jdbcType=VARCHAR},
+      </if>
+      <if test="outStatus != null">
+        #{outStatus,jdbcType=INTEGER},
+      </if>
+    </set>
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+      and drug_id = #{drugId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Prescription">
+    update prescription
+    set drug_name = #{drugName,jdbcType=VARCHAR},
+      quantity = #{quantity,jdbcType=INTEGER},
+      drug_price = #{drugPrice,jdbcType=DOUBLE},
+      total_price = #{totalPrice,jdbcType=DOUBLE},
+      status = #{status,jdbcType=INTEGER},
+      doctor_name = #{doctorName,jdbcType=VARCHAR},
+      doctor_order = #{doctorOrder,jdbcType=VARCHAR},
+      out_status=#{outStatust,jdbcType=INTEGER}
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+      and drug_id = #{drugId,jdbcType=VARCHAR}
+  </update>
+
+  <select id="getCountByPatientId" resultType="integer">
+    select count(*) from prescription where patient_id=#{patientId}
+  </select>
+
+  <select id="getPrescriptionList" resultType="com.graduate.hospital.model.Prescription">
+    select * from prescription where patient_id=#{patientId} limit #{skinPage},#{pageSize}
+  </select>
+
+  <select id="selectByPrimaryKeyPageList" resultType="com.graduate.hospital.model.Prescription">
+    select * from prescription where patient_id=#{patientId} and status=#{status} and out_status=0
+    limit #{skinPage},#{pageSize}
+  </select>
+
+<!--  计算价钱-->
+  <select id="calculateBill" resultType="double">
+    select sum(total_price)  from prescription where
+    <if test="patientId!=null">
+      patient_id=#{patientId}
+
+    </if>
+
+    <if test="drugId!=null">
+      and drug_id in
+        <foreach collection="drugId" item="drugId" open="(" close=")" separator=",">
+          #{drugId}
+        </foreach>
+    </if>
+  </select>
+
+<!--  更新每一条对应数据的状态-->
+  <update id="updateStatus">
+    update prescription set status=1 where patient_id=#{patientId} and drug_id in
+    <foreach collection="drugId" open="(" close=")" item="drugId" separator=",">
+      #{drugId}
+    </foreach>
+  </update>
+
+<!--  根据id和状态查-->
+  <select id="selectByIdAndStatus" resultType="com.graduate.hospital.model.Prescription">
+    select * from prescription where patient_id=#{idCard} and status=0
+  </select>
+
+<!--  更新该药方的处理状态-->
+  <update id="updateOutStatus">
+    update prescription set out_status=1 where patient_id=#{patientId} and drug_id=#{drugId}
+  </update>
+
+<!--  获取患者未支付或未取药的记录条数-->
+  <select id="selectCountNotPayOrTake" resultType="integer">
+    select count(*) from prescription where patient_id=#{patientId} and (status=0 or out_status=0)
+  </select>
+
+  <select id="getAllPrescription" resultType="com.graduate.hospital.model.Prescription">
+    select * from prescription where patient_id=#{patientId}
+  </select>
+
+
+</mapper>

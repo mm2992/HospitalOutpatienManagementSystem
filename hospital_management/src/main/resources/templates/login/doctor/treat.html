@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>看病</title>
+</head>
+<script type="text/javascript">
+
+    $(function () {
+        getPatient();
+        prePageList(1,2)
+
+        $("#saveBtn").click(function () {
+            saveRecord();
+        })
+
+        $("#nextBtn").click(function () {
+            nextPatient();
+        })
+    })
+
+    //查询当前就诊的患者
+    function getPatient() {
+        $.ajax({
+            url:"/patient/getPatient",
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                $("#patientId").val(resp.idCard);
+                $("#patientName").val(resp.patientName);
+                $("#patientSex").val(resp.patientSex);
+                if(resp.idCard==null){
+                    $("#nextBtn").attr("disabled",true)
+                    $("#saveBtn").attr("disabled",true)
+                    $("#selectBtn").attr("disabled",true)
+                }
+            }
+        })
+    }
+
+    $("#selectBtn").click(function () {
+        $("#kaiYaoModal").modal({
+            backdrop:'static',
+            keyboard:false
+        })
+    })
+
+    $("#search").click(function () {
+        pageList(1,2)
+    })
+
+    function pageList(pageNo,pageSize) {
+
+        $.ajax({
+            url: "/drug/operate",
+            data:{
+                "pageNo":pageNo,
+                "pageSize":pageSize,
+                "drugName":$("#drugName").val().trim(),
+                "categoryId":$("#categoryName").val().trim()
+            },
+            dataType: "json",
+            type: "get",
+            success:function (resp) {
+                var html="";
+                var drugIdStr="";
+                var drugNameStr="";
+                $.each(resp.list,function (i,n) {
+                    drugIdStr="'"+n.drugId+"'";
+                    drugNameStr="'"+n.drugName+"'";
+                    html+='<tr>'
+                    html+='<td>'+n.drugId+'</td>'
+                    html+='<td>'+n.drugName+'</td>'
+                    html+='<td>'+n.categoryName+'</td>'
+                    html+='<td>'+n.drugStock+'</td>'
+                    html+='<td>'+'<button class="btn btn-success" onclick="addPrescription('+drugIdStr+','+drugNameStr+','+n.drugPrice+')">添加</button>'+'</td>'
+                    html+='</tr>'
+                })
+
+                $("#drugPage").html(html);
+
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#drug").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                    }
+                });
+            }
+
+
+        })
+    }
+
+    // 添加药方的方法
+    function addPrescription(drugId,drugName,drugPrice) {
+        var quantity=1;
+        $.ajax({
+            url:"/prescription/operation",
+            data:{
+                "drugId":drugId,
+                "drugName":drugName,
+                "drugPrice":drugPrice,
+                "quantity":quantity,
+                "totalPrice":drugPrice*quantity,
+                "status":0
+            },
+            type:"put",
+            dataType:"text",
+            success:function (resp) {
+                if (resp){
+                    alert("成功！")
+                }else {
+                    alert("失败！")
+                }
+            }
+        })
+    }
+
+    // 展示所有的药方信息
+   function prePageList(pageNo,pageSize) {
+       $.ajax({
+           url:"/prescription/operation",
+           data:{
+             "pageNo":pageNo,
+             "pageSize":pageSize
+           },
+          type:"get",
+           dataType:"json",
+           success:function (resp) {
+                var html="";
+                var drugStr=""
+                var patientIdStr=""
+                $.each(resp.list,function (i,n) {
+                    drugStr="'"+n.drugId+"'"
+                    patientIdStr="'"+n.patientId+"'"
+                    html+='<tr>'
+                    html+='<td>'+n.drugId+'</td>'
+                    html+='<td>'+n.drugName+'</td>'
+                    html+='<td>'
+                    html+='<a  onclick="changeQuantity('+drugStr+','+0+')"><span class="glyphicon glyphicon-minus"></a>&nbsp'
+                    html+='<span id="'+n.drugId+'" value="'+n.quantity+'">'+n.quantity+'</span>&nbsp'
+                    html+='<a onclick="changeQuantity('+drugStr+','+1+')"><span class="glyphicon glyphicon-plus"></a>'
+                    html+='</td>'
+                    html+='<td><button class="btn btn-success" onclick="writeOrder('+n.drugId+','+patientIdStr+','+n.drugPrice+')">添加</button>&nbsp;'
+                    html+='<button class="btn btn-warning" onclick="cancelOrder('+drugStr+','+patientIdStr+')">取消</button>'
+                    html+='</td>'
+                    html+=' </tr>'
+
+                })
+
+               $("#prescriptionPage").html(html);
+
+               var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+               $("#fenYe").bs_pagination({
+                   currentPage: pageNo, // 页码
+                   rowsPerPage: pageSize, // 每页显示的记录条数
+                   maxRowsPerPage: 20, // 每页最多显示的记录条数
+                   totalPages: totalPages, // 总页数
+                   totalRows: resp.count, // 总记录条数
+                   visiblePageLinks: 3, // 显示几个卡片
+                   showGoToPage: true,
+                   showRowsPerPage: true,
+                   showRowsInfo: true,
+                   showRowsDefaultInfo: true,
+
+                   onChangePage : function(event, data){
+                       prePageList(data.currentPage , data.rowsPerPage);
+                   }
+               });
+           }
+       })
+   }
+
+   // 页面显示修改数量
+   function changeQuantity(drugId,flag) {
+        var num=$("#"+drugId).text();
+        if (flag==0){
+            num-=1;
+        }else {
+            num -= -1;
+        }
+        $("#"+drugId).text(num)
+
+   }
+
+   // 写医嘱并修改药品数量
+    function writeOrder(drugId,patientId,drugPrice) {
+
+        $("#msgForm")[0].reset();
+        $("#doctorOrderModal").modal("show");
+        var num=0;
+        var message="";
+        $("#okBtn").unbind("click").bind("click",function () {
+             num=$("#"+drugId).text();
+             message=$("#message").val().trim();
+             if (num<=0){
+                 alert("数量不能小于等于0，操作不能完成！")
+             }else {
+                 $.ajax({
+                     url:"/prescription/update",
+                     data:{
+                         "drugId":drugId,
+                         "patientId":patientId,
+                         "drugPrice":drugPrice,
+                         "quantity":num,
+                         "doctorOrder":message
+
+                     },
+                     type:"post",
+                     dataType:"json",
+                     success:function (resp) {
+                         if (resp){
+                             alert("成功");
+                             $("#doctorOrderModal").modal("hide");
+                         }else {
+                             alert("失败")
+                         }
+                     }
+                 })
+             }
+        })
+
+    }
+
+    // 删除该药方的方法
+    function cancelOrder(drugId,patientId) {
+        if (confirm("确定移除该药品吗？")){
+            $.ajax({
+                url:"/prescription/operation",
+                data:{
+                    "patientId":patientId,
+                    "drugId":drugId
+                },
+                type:"delete",
+                dataType:"json",
+                success:function (resp) {
+                    if (resp){
+                        alert("删除成功！")
+                        prePageList(1,2)
+                    }else {
+                        alert("移除失败！")
+                    }
+                }
+            })
+
+        }
+
+    }
+
+    //保存当前患者病例的方法
+    function saveRecord() {
+        //先保存当前当前患者的病例信息
+        $.ajax({
+            url:"/record/operation",
+            data:{
+                "patientId":$("#patientId").val(),
+                "patientName":$("#patientName").val(),
+                "patientSex":$("#patientSex").val(),
+                "description":$("#medicalRecord").val().trim()
+            },
+            type:"put",
+            dataType:"json",
+            success:function (resp) {
+                if(resp){
+                    alert("保存成功！")
+                }else {
+                    alert("保存失败！")
+                }
+            }
+        })
+    }
+
+    //点击下一位按钮切换下一位患者
+    function nextPatient() {
+        $.ajax({
+            url:"/patient/getNextPatient",
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                if(resp.idCard=="0000000000"){
+                    alert("今天没有病人啦！")
+                    $("#nextBtn").attr("disabled",true)
+                    $("#saveBtn").attr("disabled",true)
+                    $("#selectBtn").attr("disabled",true)
+                    $("#prescriptionPage").html("");
+
+                }else {
+                    $("#patientId").val(resp.idCard)
+                    $("#patientName").val(resp.patientName)
+                    $("#patientSex").val(resp.patientSex)
+                    $("#medicalRecord").val("");
+                    $("#prescriptionPage").html("");
+                    $("#fenYe").html("")
+                }
+            }
+        })
+    }
+</script>
+<body>
+    <div th:id="'content'">
+        <div class="col-sm-12 ">
+            <form class="form-horizontal" >
+                <div class="form-group col-sm-4">
+                    <label for="inputEmail3" class="col-sm-2 control-label">编号:</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="patientId" placeholder="编号" readonly>
+                    </div>
+                </div>
+                <div class="form-group col-sm-4">
+                    <label for="inputPassword3" class="col-sm-2 control-label">姓名:</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="patientName" placeholder="姓名" readonly>
+                    </div>
+                </div>
+                <div class="form-group col-sm-4">
+                    <label for="inputPassword3" class="col-sm-2 control-label">性别:</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="patientSex" placeholder="性别" readonly>
+                    </div>
+                </div>
+
+
+            </form>
+
+            <div class="form-group ">
+                <label for="inputPassword3" class="col-sm-2 control-label">病情描述:</label>
+                <div class="col-sm-10 col-sm-offset-1">
+                    <textarea type="text" class="form-control" th:id="'medicalRecord'"></textarea>
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <hr>
+            </div>
+
+        <div class="col-sm-12">
+            <div  style="font-size: 30px;font-family: 'Poor Richard';text-align: center">
+                药方信息
+            </div>
+            <table class="table table-hover table-striped" style="text-align: center">
+                <thead style="font-size: 15px;color: green;text-align: center;font-weight: bolder">
+                <tr>
+                    <td>药品编号</td>
+                    <td>药品名称</td>
+                    <td>药品数量</td>
+                    <td>操作</td>
+                </tr>
+                </thead>
+                <tbody style="text-align: center" th:id="'prescriptionPage'">
+
+
+                </tbody>
+            </table>
+
+            <div th:id="'fenYe'">
+
+            </div>
+
+            <div>
+                <button class="btn btn-info" id="saveBtn">保存病例</button>
+                <button class="btn btn-info" id="selectBtn">选择药品</button>
+                <button class="btn btn-success" th:id="'nextBtn'" >下一位</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+<!--开药的模态框-->
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" th:id="'kaiYaoModal'">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="prePageList(1,2)"><span aria-hidden="true">&times;</span></button>
+                    <h4>开药</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-inline">
+                        <div class="form-group" style="margin-left: 10%">
+                            <label for="drugName">名称：</label>
+                            <input class="form-control" type="text" th:id="'drugName'">
+                        </div>
+                        <div class="form-group" style="margin-left: 20%">
+                            <label for="categoryName">类别：</label>
+                            <select class="form-control"  th:id="'categoryName'">
+                                <option th:each="category:${categories}" th:value="${category.categoryId}" th:text="${category.categoryName}"></option>
+                            </select>
+
+                        </div>
+
+                    </form>
+                    <div style="float: right;margin-top: -35px;margin-right: 30px">
+                        <button class="btn btn-primary" id="search">检索</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <table class="table table-hover table-striped">
+                        <thead style="text-align: center">
+                            <tr>
+                                <td>编号</td>
+                                <td>名称</td>
+                                <td>药品类别</td>
+                                <td>库存</td>
+                                <td>操作</td>
+                            </tr>
+                        </thead>
+                        <tbody style="text-align: center" th:id="'drugPage'">
+
+                        </tbody>
+                    </table>
+
+                    <div th:id="'drug'">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--写医嘱的模态框-->
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" th:id="'doctorOrderModal'">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">服用方法及注意事项</h4>
+                </div>
+                <div class="modal-body">
+                    <form th:id="'msgForm'">
+                        <div class="form-group">
+                            <label for="dosage" class="control-label">用法用量:</label>
+                            <textarea class="form-control" id="dosage" th:id="'message'"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" th:id="'okBtn'">完成</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

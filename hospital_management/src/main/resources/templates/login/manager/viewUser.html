@@ -1,0 +1,348 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<script type="text/javascript">
+    $(function () {
+        //给入职日期输入框绑定日历组件
+        $(".Time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+
+        //页面加载完毕后自动填充用户信息
+        pageList(1,2);
+
+    })
+
+    //点击搜索按钮根据条件进行搜索
+    $("#searchBtn").click(function () {
+        $("#qx").attr("checked",false);
+        pageList(1,2)
+    })
+
+    //点击全选按钮选中当前页所有数据
+    $("#qx").click(function () {
+        $("input[name=xz]").prop("checked",this.checked)
+    })
+
+    //选中所有数据则全选按钮被选中
+    $("#pageList").on("click",$("input[name=xz]"),function () {
+        $("#qx").prop("checked",$("input[name=xz]").length==$("input[name=xz]:checked").length)
+    })
+
+    //点击删除按钮，删除数据
+    $("#deleteBtn").click(function () {
+        //alert(123)
+        deleteUser()
+    })
+
+
+    //点击修改按钮弹出修改用户信息的模态框,并将数据准备完毕
+    $("#editUserBtn").click(function () {
+        //判断是否选中修改的数据
+        var userXz=$("input[name=xz]:checked");
+        if (userXz.length==0){
+            alert("请选择您要修改的用户...");
+        }
+        if (userXz.length>1){
+            alert("您每次最多操作一条数据...")
+        }
+        if (userXz.length==1) {
+            $.ajax({
+                url:"/user/getUserAndPosition",
+                data:{
+                    "userId":$(userXz[0]).val()
+                },
+                dataType:"json",
+                type:"get",
+                success:function (resp) {
+                    $("#modal-userId").val(resp.user.userId);
+                    $("#modal-userName").val(resp.user.userName);
+                    $("#modal-userTel").val(resp.user.userTel);
+                    $("#modal-entryTime").val(resp.user.entryTime);
+                    //填充性别栏
+                    var htmlSex='';
+                    htmlSex+='<option value="'+resp.user.userSex+'">'+resp.user.userSex+'</option>>';
+                    if (resp.user.userSex=='女'){
+                        htmlSex+='<option value="男">男</option>';
+                    }else if (resp.user.userSex=='男'){
+                        htmlSex+='<option value="女">女</option>';
+                    }else{
+                        htmlSex+='<option value="男">男</option>';
+                        htmlSex+='<option value="女">女</option>';
+                    }
+                    $("#modal-userSex").html(htmlSex);
+
+                    //填充职位栏
+                    var htmlPosition='<option value="0">'+resp.user.userPosition+'</option>';
+
+                    $.each(resp.position,function (i,n) {
+                        if (resp.user.userPosition==n.userPosition){
+                            htmlPosition+='';
+                        }else {
+                            htmlPosition += '<option value="' + n.userCategory + '">' + n.userPosition + '</option>'
+                        }
+                    })
+
+                    $("#modal-position").html(htmlPosition);
+                }
+            })
+
+            //展开模态窗口
+            $("#updateUserModal").modal("show");
+        }
+    })
+
+    //点击模态框上的修改按钮进行数据的修改
+    $("#modal-updateUserBtn").click(function () {
+        updateUser();
+    })
+
+    // 分页的方法
+    function pageList(pageNo,pageSize) {
+        $.ajax({
+            url:"/user/pageList",
+            data:{
+                "pageNo":pageNo,
+                "pageSize":pageSize,
+                "userId":$.trim($("#userId").val()),
+                "userName":$.trim($("#userName").val()),
+                "entryTime":$.trim($("#entryTime").val())
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+                $.each(resp.list,function (i,n) {
+                html+='<tr>';
+                html+='<td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<input type="checkbox" name="xz" value="'+n.userId+'"></td>';;
+                html+='<td>'+n.userId+'</td>';
+                html+='<td>'+n.userName+'</td>';
+                html+='<td>'+n.userPosition+'</td>';
+                html+='<td>'+n.userTel+'</td>';
+                html+='<td>'+n.entryTime+'</td>';
+                html+='</tr>';
+                })
+
+                $("#pageList").html(html);
+
+
+                //绑定分页插件
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#userPage").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                        $("#qx").attr("checked",false);
+                    }
+                });
+            }
+
+        })
+
+    }
+
+    //删除所选数据的方法
+    function deleteUser() {
+        var xzs=$("input[name=xz]:checked");
+
+        if (xzs.length==0){
+            alert("请选择您要删除的数据...")
+        }else {
+
+            //发送ajax请求
+            if (confirm("确定要删除这"+xzs.length+"条数据吗？")){
+                var params="";
+                //拼接字符串进行参数传递
+                for (var i=0;i<xzs.length;i++){
+                    params+="id="+$(xzs[i]).val();
+                    if (i!=xzs.length-1){
+                        params+="&";
+                    }
+
+                }
+                $.ajax({
+                    url: "/user/deleteUser?"+params,
+                    dataType: "json",
+                    type: "get",
+                    success:function (resp) {
+                        if (resp){
+                            alert("删除成功！")
+                        }else {
+                            alert("删除失败，请检查所选项中是否包含您自己的信息..")
+                        }
+                    }
+                })
+                //删除完成后刷新用户列表
+                pageList(1,2);
+            }
+
+
+
+        }
+
+    }
+
+    //修改用户信息的方法
+    function updateUser() {
+        $.ajax({
+            url:"/user/updateUser",
+            data:{
+                'xzUserId':$("input[name=xz]:checked").val(),
+                'userId':$("#modal-userId").val(),
+                'userName':$("#modal-userName").val(),
+                'userSex':$("#modal-userSex").val(),
+                'userCategory':$("#modal-position").val(),
+                'userTel':$("#modal-userTel").val(),
+                'entryTime':$("#modal-entryTime").val()
+            },
+            dataType:"json",
+            type:"post",
+            success:function (resp) {
+                if (resp) {
+                    $("#updateUserModal").modal("hide");
+                    pageList(1,2)
+                }else {
+                    $("#message")[0].innerText="更新失败！";
+                }
+            }
+        })
+
+    }
+
+
+</script>
+
+
+    <div id="content">
+<!--        面板-->
+        <div >
+            <div class="panel panel-primary">
+                <!-- Default panel contents -->
+                <div class="panel-heading">查看用户信息</div>
+                <div class="panel-body" th:style="'margin-bottom: 20px;margin-top: 20px'">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                                  <span class="input-group-addon">编号</span>
+                                <input type="text" class="form-control" aria-label="..." th:id="'userId'">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="input-group">
+                              <span class="input-group-addon">姓名</span>
+                                <input type="text" class="form-control" aria-label="..." th:id="'userName'">
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">入职日期</span>
+                                <input type="text" class="form-control Time" aria-label="..." th:id="'entryTime'" placeholder="请注意日期格式">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <button  class="btn btn-primary " th:id="'searchBtn'"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp查询</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7;width: 100%;float: right; height: 50px; position: relative;top: 5px;">
+                    <div class="btn-group" style="position: relative;top: 18%">
+                        <button type="button" class="btn btn-info" id="editUserBtn" ><span class="glyphicon glyphicon-pencil"></span> 修改</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus" ></span> 删除</button>
+                    </div>
+                </div>
+                    <!-- Table -->
+                    <table class="table table-hover" >
+                        <thead >
+                        <tr class="success">
+                            <th>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<input type="checkbox" th:id="'qx'"></th>
+                            <th>编号</th>
+                            <th>姓名</th>
+                            <th>职位</th>
+                            <th>联系方式</th>
+                            <th>入职时间</th>
+                        </tr>
+                        </thead>
+                        <tbody th:id="'pageList'">
+
+                        </tbody>
+                    </table>
+
+                <div style="height: 50px; position: relative;top: 30px;">
+                    <div id="userPage">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<!--修改用户信息的模态框-->
+<div class="modal fade" tabindex="-1" role="dialog" th:id="'updateUserModal'">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">修改用户信息</h4>
+            </div>
+            <div class="modal-body row" style="height: 300px">
+                <div class="col-sm-4 input-group col-sm-offset-1">
+                    <span class="input-group-addon" th:id="'addon1'">编号</span>
+                    <input type="text"  class="form-control" placeholder="工号" aria-describedby="addon1" th:id="'modal-userId'" readonly>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon2'">姓名</span>
+                    <input type="text"  class="form-control" placeholder="姓名" aria-describedby="addon2" th:id="'modal-userName'">
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-1" style="margin-top: 7%">
+                    <span class="input-group-addon" th:id="addon3">性别</span>
+                    <select class="form-control" th:id="'modal-userSex'">
+
+                    </select>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon4'">职位</span>
+                    <select class="form-control" th:id="'modal-position'">
+                        <option>111</option>
+                        <option>2626</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-1" style="margin-top: 7%">
+                    <span class="input-group-addon" th:id="'addon5'">电话</span>
+                    <input type="text"  class="form-control" placeholder="联系电话" aria-describedby="addon5" th:id="'modal-userTel'">
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon6'">入职日期</span>
+                    <input type="text"  class="form-control Time" placeholder="入职日期" aria-describedby="addon6" th:id="'modal-entryTime'">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <span style="float: left;color: red" th:id="'message'"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" th:id="'modal-updateUserBtn'">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,507 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<script type="text/javascript">
+    $(function () {
+    // 填充生产厂商选项
+    fill();
+
+    //绑定日历插件
+        $(".time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+        $(".time1").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"top-right"
+        });
+
+        $("#a").click(function () {
+            alert($("#a").val())
+        })
+
+
+    })
+
+
+    //提交订单的方法
+    $("#submit").click(function () {
+        if ($("#drugName").val().trim()==""){
+            $("#error").text("药品名称不能为空！")
+            meaa();
+
+        }else if ($("#quantity").val().trim()==""){
+            $("#error").text("订购数量不能为空！")
+            meaa();
+        }else {
+            addOrder();
+        }
+
+    })
+
+    //提交订单信息的提示框
+    function meaa() {
+        $("#error").attr("class","alert-danger").show(1000);
+        setTimeout(function () {
+            $("#error").hide(3000);
+
+        }, 3000);
+    }
+
+    //填充生产厂商信息
+    function fill() {
+        $.ajax({
+            url:"drug/getManu",
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+                var html1="<option value=''>全部厂商</option>"
+                $.each(resp,function (i,n) {
+                    html+='<option value="'+n.maneId+'">'+n.maneName+'</option>'
+                    html1+='<option value="'+n.maneId+'">'+n.maneName+'</option>'
+                })
+                $("#manufacturer").html(html);
+                $("#maneId").html(html1);
+                $("#HisManeId").html(html1)
+
+            }
+        })
+    }
+
+    // 添加订单的方法
+    function addOrder() {
+        $.ajax({
+            url: "/order/operate",
+            data:{
+                "drugName":$("#drugName").val(),
+                "quantity":$("#quantity").val(),
+                "maneId":$("#manufacturer").val()
+            },
+            type: "put",
+            dataType: "text",
+            success:function (resp) {
+                alert(resp)
+                $("#form0")[0].reset()
+            }
+        })
+    }
+
+    //点击查询按钮进行分页查询
+   $("#search").click(function () {
+        pageList(1,2);
+   })
+
+    $("#HisSearch").click(function () {
+        pageList1(1,2);
+    })
+
+    // 分页查询符合条件的数据
+    function pageList(pageNo,pageSize) {
+        $.ajax({
+            url:"/order/operate",
+            data: {
+                "pageNo":pageNo,
+                "pageSize":pageSize,
+                "drugName":$("#drugName2").val().trim(),
+                "maneId":$("#maneId").val().trim(),
+                "orderTime":$("#orderTime").val().trim()
+
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+                var orderIdStr="";
+                $.each(resp.list,function (i,n) {
+                    orderIdStr="'"+n.orderId+"'";
+                    html+='<tr>'
+                    html+='<td>'+n.orderId+'</td>'
+                    html+='<td>'+n.drugName+'</td>'
+                    html+='<td>'+n.quantity+'</td>'
+                    html+='<td>'+n.maneName+'</td>'
+                    html+='<td>'+n.orderBy+'</td>'
+                    html+='<td>'+n.orderTime+'</td>'
+                    html+='<td>'+'<button class="btn btn-success btn-sm" onclick="turnOrderStatus('+orderIdStr+')" >'+'<span class="glyphicon glyphicon-ok-sign " aria-hidden="true">&nbsp;完成</span>'+'</button>'
+                    html+='<button class="btn btn-warning btn-sm" onclick="deleteOrder('+orderIdStr+')"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true" >&nbsp;删除</span></button></td>'
+                    html+='</tr>'
+                })
+
+                $("#pageList").html(html)
+
+                //绑定分页插件
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#orderPage").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                    }
+                });
+
+
+            }
+        })
+
+    }
+
+
+    //将未完成订单转换为已完成
+    function turnOrderStatus(orderIdStr) {
+        //alert(orderIdStr)
+
+        //模态框弹出时重置表单
+        $("#form1")[0].reset();
+       // alert(orderIdStr)
+        $("#exampleModal").modal("show")
+
+
+        $("#sub").unbind('click').bind("click",function () {
+           var data=$("#modal-productTime").val().trim();
+           var data1=$("#modal-expiryDate").val().trim();
+           var regExp=/(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29)/
+           var price=$("#modal-price").val().trim();
+           var drugId=$("#modal-drugId").val().trim();
+           check(data,data1,regExp,price,drugId)
+           if (data!=""&&data1!=""&&price!=""&&drugId!=""&&regExp.test(data)&&regExp.test(data1)) {
+               $.ajax({
+                   url: "/order/getOneOrder/"+orderIdStr,
+                   data: {
+                       "categoryId": $("#modal-category").val().trim(),
+                       "drugId": drugId,
+                       "drugPrice": price,
+                       "productTime":data,
+                       "expiryDate": data1,
+                       "drugAttr": $("#modal-drugAttr").val().trim(),
+                   },
+                   type: "get",
+                   dataType: "text",
+                   success: function (resp) {
+                       alert(resp)
+                       $("#exampleModal").modal("hide");
+                       pageList(1,2)
+                   }
+               })
+           }
+
+        })
+
+
+
+    }
+
+    //删除订单信息
+    function deleteOrder(orderId) {
+        if (confirm("确定删除该订单吗？")){
+            $.ajax({
+                url:"/order/operate",
+                data:{
+                    "orderId":orderId
+                },
+                dataType:"text",
+                type:"delete",
+                success:function (resp) {
+                    alert(resp)
+                    pageList(1,2)
+                    pageList1(1,2)
+                }
+            })
+        }
+
+    }
+
+    //合法校验
+    function check(data,data1,regExp,price,drugId) {
+        if (!regExp.test(data)) {
+            alert("生产日期格式不正确")
+        }
+        if (!regExp.test(data1)) {
+            alert("有效日期格式不正确")
+        }
+
+        if (drugId==""||price==""){
+            alert("请继续完善药品信息！")
+        }
+
+    }
+
+
+    // 历史订单模块
+    function pageList1(pageNo,pageSize) {
+        $.ajax({
+            url:"/order/HisOrder",
+            data: {
+                "pageNo":pageNo,
+                "pageSize":pageSize,
+                "drugName":$("#drugName3").val().trim(),
+                "maneId":$("#HisManeId").val().trim(),
+                "orderTime":$("#HisOrderTime").val().trim()
+
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+                var orderIdStr="";
+                $.each(resp.list,function (i,n) {
+                    orderIdStr="\'"+n.orderId+"\'";
+                    html+='<tr>'
+                    html+='<td>'+n.orderId+'</td>'
+                    html+='<td>'+n.drugName+'</td>'
+                    html+='<td>'+n.quantity+'</td>'
+                    html+='<td>'+n.maneName+'</td>'
+                    html+='<td>'+n.orderBy+'</td>'
+                    html+='<td>'+n.orderTime+'</td>'
+                    html+='<td>'+'<button class="btn btn-warning btn-sm" onclick="deleteOrder('+orderIdStr+')"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true" >&nbsp;删除</span></button></td>'
+                    html+='</tr>'
+                })
+
+                $("#HisPageList").html(html)
+
+                //绑定分页插件
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#HisOrderPage").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList1(data.currentPage , data.rowsPerPage);
+                    }
+                });
+
+
+            }
+        })
+
+    }
+
+
+
+
+</script>
+<div th:id="'content'">
+
+    <div class="page-header" style="margin-top: -22px;margin-bottom: 5px">
+        <h1>药品订购</small></h1>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active" ><a href="#home" role="tab" aria-controls="home" data-toggle="tab">加购药品</a></li>
+        <li role="presentation"><a href="#home1" data-toggle="tab" role="tab" aria-controls="home1" onclick="pageList(1,2)">待处理订单</a></li>
+        <li role="presentation"  ><a href="#home2" role="tab" aria-controls="home2" data-toggle="tab" onclick="pageList1(1,2)">历史订单</a></li>
+    </ul>
+
+<!--    Tab panels-->
+    <div class="tab-content row">
+<!--        添加订单-->
+        <div role="tabpanel" class="tab-pane active col-sm-12"  id="home">
+            <div class="panel panel-default col-sm-12" style="border-width: 5px">
+                <form th:id="'form0'">
+                        <div class="form-group col-sm-6 col-sm-offset-3">
+                            <label for="exampleInputEmail1">药品名称：</label>
+                            <input type="text" class="form-control" id="drugName" placeholder="请输入完整药品名称">
+                        </div>
+
+                        <div class="form-group col-sm-6 col-sm-offset-3">
+                            <label for="exampleInputPassword2">订购数量：</label>
+                            <input type="text" class="form-control" th:id="'quantity'" placeholder="请输入需要订购的数量">
+                        </div>
+                        <div class="form-group col-sm-6 col-sm-offset-3">
+                            <label for="manufacturer">生产厂商：</label>
+                            <select class="form-control" th:id="'manufacturer'">
+
+                            </select>
+                        </div>
+                </form>
+
+                    <div class="form-group col-sm-6 col-sm-offset-5">
+                        <button class="btn btn-toolbar" id="submit">提交订单</button>
+                    </div>
+            </div>
+            <div class="alert alert-danger hide" role="alert" th:id="'error'" style="font-size: 25px;color: red;text-align: center"></div>
+
+
+        </div>
+
+
+<!--        查看订单信息-->
+        <div role="tabpanel" class="tab-pane col-sm-12" id="home1">
+            <div class="panel panel-default" th:style="'border-width: 5px'">
+<!--                查询条件-->
+                <form class="form-inline" style="margin-top: 20px">
+                    <div class="form-group">
+                        <label for="drugName2">药品名称</label>
+                        <input type="text" class="form-control" id="drugName2" placeholder="药品名称">
+                    </div>
+                    <div class="form-group">
+                        <label for="maneId">生产厂商</label>
+                        <select class="form-control" th:id="'maneId'" style="width: 200px">
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderTime">创建日期</label>
+                        <input type="text" class="form-control time" id="orderTime" placeholder="创建日期">
+                    </div>
+                    <button type="button" class="btn btn-default" style="font-weight: bolder" th:id="'search'"><span class="glyphicon glyphicon-search"></span>&nbsp;search</button>
+                </form>
+
+<!--                横线-->
+                <div style="margin: auto">
+                    <hr>
+                </div>
+
+<!--                表格数据-->
+                <table class="table table-hover table-striped" >
+                    <thead style="font-size: 15px;color: green;text-align: center;font-weight: bolder">
+                    <tr class="success">
+                        <td>订单编号</td>
+                        <td>药品名称</td>
+                        <td>订购数量</td>
+                        <td>生产厂商</td>
+                        <td>操作员</td>
+                        <td>下单时间</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody style="text-align: center" th:id="'pageList'">
+
+                    </tbody>
+                </table>
+                <div style="height: 50px; position: relative;top: 30px;">
+                    <div th:id="'orderPage'">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        历史订单-->
+        <div role="tabpanel" class="tab-pane  col-sm-12"  id="home2">
+            <div class="panel panel-default " style="border-width: 5px">
+                <form class="form-inline" style="margin-top: 20px">
+                    <div class="form-group">
+                        <label for="drugName3">药品名称</label>
+                        <input type="text" class="form-control" id="drugName3" placeholder="药品名称">
+                    </div>
+                    <div class="form-group">
+                        <label for="HisManeId">生产厂商</label>
+                        <select class="form-control" th:id="'HisManeId'" style="width: 200px">
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="HisOrderTime">创建日期</label>
+                        <input type="text" class="form-control time" id="HisOrderTime" placeholder="创建日期">
+                    </div>
+                    <button type="button" class="btn btn-default" style="font-weight: bolder" th:id="'HisSearch'"><span class="glyphicon glyphicon-search"></span>&nbsp;search</button>
+                </form>
+
+                <!--                横线-->
+                <div style="margin: auto">
+                    <hr>
+                </div>
+
+                <!--                表格数据-->
+                <table class="table table-hover table-striped" >
+                    <thead style="font-size: 15px;color: green;text-align: center;font-weight: bolder">
+                    <tr class="success">
+                        <td>订单编号</td>
+                        <td>药品名称</td>
+                        <td>订购数量</td>
+                        <td>生产厂商</td>
+                        <td>操作员</td>
+                        <td>下单时间</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody style="text-align: center" th:id="'HisPageList'">
+
+                    </tbody>
+                </table>
+                <div style="height: 50px; position: relative;top: 30px;">
+                    <div th:id="'HisOrderPage'">
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!--改药品完成状态的模态框-->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">完善药品信息</h4>
+            </div>
+            <div class="modal-body">
+                <form th:id="'form1'">
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">药品编号：</label>
+                        <input type="text" class="form-control" th:id="'modal-drugId'" th:placeholder="'药品编号'">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">单价：</label>
+                        <input class="form-control" th:id="'modal-price'" th:placeholder="'药品单价'"></input>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">药品类别：</label>
+                        <select  class="form-control" th:id="'modal-category'" >
+
+                            <option  th:each="category:${drugCategories}" th:value="${category.categoryId}" th:text="${category.categoryName}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">药品属性：</label>
+                        <select class="form-control" th:id="'modal-drugAttr'">
+                            <option th:value="'非处方药'">非处方药</option>
+                            <option th:value="'处方药'">处方药</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label ">生产日期：</label>
+                        <input class="form-control time1" th:id="'modal-productTime'" th:placeholder="'请注意日期格式'"></input>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label ">有效日期：</label>
+                        <input class="form-control time1" th:id="'modal-expiryDate'" placeholder="请注意日期格式"></input>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" th:id="'sub'">入库</button>
+            </div>
+        </div>
+    </div>
+</div>

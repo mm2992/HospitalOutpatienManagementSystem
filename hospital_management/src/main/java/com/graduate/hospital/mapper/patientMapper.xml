@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.PatientMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Patient">
+    <id column="id_card" jdbcType="VARCHAR" property="idCard" />
+    <result column="patient_name" jdbcType="VARCHAR" property="patientName" />
+    <result column="patient_sex" jdbcType="CHAR" property="patientSex" />
+    <result column="dept_id" jdbcType="VARCHAR" property="deptId" />
+    <result column="balance" jdbcType="DOUBLE" property="balance" />
+    <result column="register_time" jdbcType="VARCHAR" property="registerTime" />
+    <result column="patient_no" jdbcType="INTEGER" property="patientNo"/>
+    <result column="dept_name" jdbcType="VARCHAR" property="deptName"/>
+    <result column="status" jdbcType="INTEGER" property="status"/>
+
+
+  </resultMap>
+  <sql id="Base_Column_List">
+    id_card, patient_name, patient_sex, dept_id, balance, register_time,patient_no,status
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from patient
+    where id_card = #{idCard,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from patient
+    where id_card = #{idCard,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Patient">
+    insert into patient (id_card, patient_name, patient_sex, 
+      dept_id, balance, register_time,patient_no,status
+      )
+    values (#{idCard,jdbcType=VARCHAR}, #{patientName,jdbcType=VARCHAR}, #{patientSex,jdbcType=CHAR}, 
+      #{deptId,jdbcType=VARCHAR}, #{balance,jdbcType=DOUBLE}, #{registerTime,jdbcType=VARCHAR},#{patientNo,jdbcType=INTEGER},#{status,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Patient">
+    insert into patient
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="idCard != null">
+        id_card,
+      </if>
+      <if test="patientName != null">
+        patient_name,
+      </if>
+      <if test="patientSex != null">
+        patient_sex,
+      </if>
+      <if test="deptId != null">
+        dept_id,
+      </if>
+      <if test="balance != null">
+        balance,
+      </if>
+      <if test="registerTime != null">
+        register_time,
+      </if>
+      <if test="patientNo != null">
+        patient_no,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="idCard != null">
+        #{idCard,jdbcType=VARCHAR},
+      </if>
+      <if test="patientName != null">
+        #{patientName,jdbcType=VARCHAR},
+      </if>
+      <if test="patientSex != null">
+        #{patientSex,jdbcType=CHAR},
+      </if>
+      <if test="deptId != null">
+        #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null">
+        #{balance,jdbcType=DOUBLE},
+      </if>
+      <if test="registerTime != null">
+        #{registerTime,jdbcType=VARCHAR},
+      </if>
+      <if test="patientNo != null">
+        #{patientNo,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Patient">
+    update patient
+    <set>
+      <if test="patientName != null">
+        patient_name = #{patientName,jdbcType=VARCHAR},
+      </if>
+      <if test="patientSex != null">
+        patient_sex = #{patientSex,jdbcType=CHAR},
+      </if>
+      <if test="deptId != null">
+        dept_id = #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null">
+        balance = #{balance,jdbcType=DOUBLE},
+      </if>
+      <if test="registerTime != null">
+        register_time = #{registerTime,jdbcType=VARCHAR},
+      </if>
+      <if test="patientNo != null">
+        patient_no = #{patientNo,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id_card = #{idCard,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Patient">
+    update patient
+    set patient_name = #{patientName,jdbcType=VARCHAR},
+      patient_sex = #{patientSex,jdbcType=CHAR},
+      dept_id = #{deptId,jdbcType=VARCHAR},
+      balance = #{balance,jdbcType=DOUBLE},
+      register_time = #{registerTime,jdbcType=VARCHAR},
+        patient_no = #{patientNo,jdbcType=INTEGER},
+        status = #{status,jdbcType=INTEGER}
+
+    where id_card = #{idCard,jdbcType=VARCHAR}
+  </update>
+
+<!--  根据科室id查当前科室所有挂号数量-->
+  <select id="selectAllByDeptId" resultType="java.lang.Integer">
+    select count(*) from patient where dept_id=#{deptId}
+  </select>
+
+<!--  查询挂号信息与科室表根据idCard联查-->
+  <select id="getPatientInfo" resultType="com.graduate.hospital.vo.PatientVo">
+        select p.id_card as idCard,p.patient_name as patientName,p.patient_sex as patientSex,d.dept_name as deptName,p.patient_no as patientNo,p.register_time as registerTime,p.status as status,p.balance as balance
+        from patient p
+        join department d
+        on p.id_card=#{idCard} and d.dept_id=p.dept_id
+  </select>
+
+<!--  查询为看病的病人-->
+  <select id="getNoSeePatient" resultType="com.graduate.hospital.model.Patient">
+    select * from patient where dept_id=#{deptId} and status=0 order by patient_no asc limit 0,1
+  </select>
+
+  <update id="updateStatus" >
+    update patient set status=1 where id_card=#{idCard}
+  </update>
+
+<!--  查询余额-->
+  <select id="getPatientBalance" resultType="double">
+    select balance from patient where id_card=#{patientId}
+  </select>
+
+<!--  更新余额-->
+  <update id="updateBalance">
+    update patient set balance=#{newBalance} where id_card=#{patientId}
+  </update>
+</mapper>

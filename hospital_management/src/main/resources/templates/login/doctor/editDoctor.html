@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>编辑资料</title>
+</head>
+<body>
+<script type="text/javascript">
+    $(function () {
+
+        // 修改信息的操作
+        $("#editBtn").click(function () {
+            $.ajax({
+                url:"/doctor/updateDoctor",
+                data:{
+                    "doctorName":$("#editName").val().trim(),
+                    "doctorSex":$("#editSex").val().trim(),
+                    "doctorId":$("#doctorId").val().trim(),
+                    "xzDoctorId":$("#doctorId").val().trim()
+                },
+                type:"post",
+                dataType:"json",
+                success:function (resp) {
+                    if (resp){
+                        alert("修改成功")
+                    }
+                }
+            })
+        })
+
+        // 修改密码的操作
+        $("#confirmModifyBtn").click(function () {
+            $("#editPwdModal").modal("show")
+        })
+
+        // 点击模态框的确认修改按钮触发事件
+        $("#confirmModifyBtn").click(function () {
+            var oldPwd=$("#oldPassword").val().trim();
+            var newPwd=$("#newPassword").val().trim();
+            var confirmPwd=$("#confirmPassword").val().trim();
+            // alert(oldPwd+newPwd+confirmPwd)
+            if (oldPwd=="") {
+                $("#oldSpan").html("<p>旧密码不能为空！</p>")
+            }else if (newPwd!=confirmPwd||newPwd==""||oldPwd==newPwd){
+                $("#newSpan").html("<p>新密码存在错误！</p>")
+            }
+            else {
+                //发送请求修改密码
+                $.ajax({
+                    url: "/doctor/changePwd",
+                    data: {
+                        "oldPwd":oldPwd,
+                        "newPwd":newPwd
+                    },
+                    dataType: "json",
+                    type: "post",
+                    success:function (resp) {
+                        if (resp) {
+                            $("#editPwdModal").modal("hide");
+                            alert("密码修改成功，原账户失效，请重新登陆！");
+                            window.location.href="/loginIndex";
+                        }else {
+                            $("#changeResultSpan").html("<p>密码修改失败！</p>")
+                        }
+                    }
+                })
+            }
+        })
+
+    })
+</script>
+<div id="content" >
+    <div class="col-sm-10 col-sm-offset-1">
+        <div class="panel panel-info">
+            <div class="panel-heading">编辑资料</div>
+            <div class="panel-body">
+                <div class="input-group" style="width: 40%;float: left">
+                    <span class="input-group-addon" id="basic-addon1" >工号</span>
+                    <input type="text" class="form-control" placeholder="工号" aria-describedby="basic-addon1" th:id="'doctorId'" th:value="${#session.getAttribute('doctor').doctorId}" readonly>
+                </div>
+                <div class="input-group" style="width: 40%;float: right">
+                    <span class="input-group-addon" id="basic-addon2">姓名</span>
+                    <input type="text" class="form-control" placeholder="姓名" aria-describedby="basic-addon1"  th:value="${#session.getAttribute('doctor').doctorName}" id="editName">
+                </div>
+                <div class="input-group" style="width: 40%;float: left;margin-top: 30px">
+                    <span class="input-group-addon" id="basic-addon3" >性别</span>
+                    <select class="form-control" id="editSex">
+                        <option th:value="${#session.getAttribute('doctor').doctorSex}=='男'? '男':'女'" th:text="${#session.getAttribute('doctor').doctorSex} == '男'? '男':'女'"></option>
+                        <option th:value="${#session.getAttribute('doctor').doctorSex}=='男'? '女':'男'" th:text="${#session.getAttribute('doctor').doctorSex} =='男'? '女':'男'"></option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 40%;float: right;margin-top: 30px">
+                    <span class="input-group-addon" id="basic-addon4" >职称</span>
+                    <input type="text" class="form-control" placeholder="职位" aria-describedby="basic-addon1" th:value="${#session.getAttribute('doctor').levelName}" readonly >
+                </div>
+                <div class="input-group" style="width: 40%;float: left;margin-top: 30px">
+                    <span class="input-group-addon" id="basic-addon5" >科室</span>
+                    <input type="text" id="editTel" class="form-control" placeholder="联系电话" th:value="${#session.getAttribute('doctor').deptName}" aria-describedby="basic-addon1"  readonly>
+                </div>
+                <div class="input-group" style="width: 40%;float: right;margin-top: 30px">
+                    <span class="input-group-addon" id="basic-addon6" >入职时间</span>
+                    <input type="text" class="form-control" placeholder="入职时间" aria-describedby="basic-addon1" th:value="${#session.getAttribute('doctor').entryDate}" readonly >
+                </div>
+                <div th:style="'margin-top:20%'">
+                    <button type="button" class="btn btn-primary" id="editBtn"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>&nbsp;修改</button>
+                    <a type="button" href="javascript:$('#content').load('/warningPage')" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;取消</a>
+                    <button type="button" class="btn btn-success" id="editPwdBtn" data-target="#editPwdModal" data-toggle="modal"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span>&nbsp;修改密码</button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--修改密码的模态框-->
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel" th:id="'editPwdModal'">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="gridSystemModalLabel">修改密码</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="oldPassword">旧密码：</label>
+                    <input type="password" class="form-control pwd" id="oldPassword" placeholder="旧密码">
+                    <span style="color: red" th:id="'oldSpan'" class="span"></span>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">新密码：</label>
+                    <input type="password" class="form-control pwd" id="newPassword" placeholder="新密码">
+                    <span style="color: red" th:id="'newSpan'" class="span"></span>
+
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认密码：</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="确认密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span th:style="'float:left；color:red'" th:id="'changeResultSpan'" ></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" th:id="'confirmModifyBtn'">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

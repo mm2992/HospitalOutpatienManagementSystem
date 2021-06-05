@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>药品异常监测</title>
+</head>
+<script type="text/javascript">
+    $(function () {
+        $("#search").click(function () {
+            pageList(1,2)
+        })
+
+    })
+
+    function change() {
+        var reason=$("#reason").val();
+        if (reason=="过期"){
+            $("#num")[0].disabled="disabled"
+        }
+        if (reason=="余量不足"){
+            $("#num")[0].disabled="";
+        }
+    }
+    
+    function pageList(pageNo,pageSize) {
+        var reason=$("#reason").val();
+        var num=$("#num").val().trim();
+        var Exp=/^[0-9]*[1-9][0-9]*$/
+        if (reason=="余量不足"&&!Exp.test(num)){
+                alert("请输入数量")
+        }else {
+            $.ajax({
+                url:"/drug/monitor",
+                data:{
+                    "pageNo":pageNo,
+                    "pageSize":pageSize,
+                    "reason":reason,
+                    "num":num
+                },
+                type:"get",
+                dataType:"json",
+                success:function (resp) {
+                    var drugIdStr="";
+                    var drugNameStr="";
+                    var maneNameStr="";
+                    var html="";
+                    $.each(resp.list,function (i,n) {
+                        drugIdStr="'"+n.drugId+"'"
+                        drugNameStr="'"+n.drugName+"'"
+                        maneNameStr="'"+n.maneName+"'"
+                    html+='<tr> '
+                    html+='<td>'+n.drugId+'</td>'
+                    html+='<td><a onclick="showDrugMsg('+drugIdStr+')" >'+n.drugName+'</a></td>'
+                    html+='<td>'+n.drugStock+'</td>'
+                    html+='<td>'+n.categoryName+'</td>'
+                    html+='<td>'+n.maneName+'</td>'
+                    if (reason=="过期") {
+                        html += '<td><button class="btn btn-danger" onclick="returnGoods('+drugIdStr+','+drugNameStr+','+maneNameStr+','+n.drugStock+')">退货</button></td>'
+                    }else {
+                        html+='<td><button class="btn btn-success"  onclick="addPurchase('+drugNameStr+')">加购</button></td>'
+                    }
+                    html+='</tr>'
+                    })
+
+                    $("#drug").html(html)
+
+                    var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                    $("#drugPage").bs_pagination({
+                        currentPage: pageNo, // 页码
+                        rowsPerPage: pageSize, // 每页显示的记录条数
+                        maxRowsPerPage: 20, // 每页最多显示的记录条数
+                        totalPages: totalPages, // 总页数
+                        totalRows: resp.count, // 总记录条数
+                        visiblePageLinks: 3, // 显示几个卡片
+                        showGoToPage: true,
+                        showRowsPerPage: true,
+                        showRowsInfo: true,
+                        showRowsDefaultInfo: true,
+
+                        onChangePage : function(event, data){
+                            pageList(data.currentPage , data.rowsPerPage);
+                        }
+                    });
+
+                }
+            })
+        }
+    }
+// 展示药品详细信息
+    function showDrugMsg(drugIdStr) {
+        $.ajax({
+            url: "/drug/getOneDrug/"+drugIdStr,
+            dataType: "json",
+            type: "get",
+            success:function (resp) {
+                $("#msgTitle")[0].innerText=resp.drugName+"的详细信息";
+                $("#idSpan")[0].innerText=resp.drugId;
+                $("#idSpan1")[0].innerText=resp.drugName;
+                $("#idSpan2")[0].innerText=resp.drugPrice;
+                $("#idSpan3")[0].innerText=resp.drugStock;
+                $("#idSpan4")[0].innerText=resp.categoryName;
+                $("#idSpan5")[0].innerText=resp.drugAttr;
+                $("#idSpan6")[0].innerText=resp.productTime;
+                $("#idSpan7")[0].innerText=resp.expiryDate;
+                $("#idSpan8")[0].innerText=resp.maneName;
+
+                $("#drugMsgModal").modal("show")
+            }
+
+        })
+    }
+
+    // 药品过期退货
+    function returnGoods(drugId,drugName,maneName,drugStock) {
+        if (confirm("确定将此药品退货吗？")){
+            $.ajax({
+                url:"/outRecord/addRecord",
+                data:{
+                    "drugId":drugId,
+                    "drugName":drugName,
+                    "maneName":maneName,
+                    "quantity":drugStock,
+                    "reason":"退货",
+                    "remark":"过期"
+                },
+                dataType:"json",
+                type:"put",
+                success:function (resp) {
+                    if (resp){
+                        alert("退货成功")
+                        pageList(1,2)
+                    }else {
+                        alert("操作失败！")
+                    }
+                }
+            })
+        }
+    }
+
+    // 加购
+    function addPurchase(drugNameStr) {
+
+        $("#drugForm")[0].reset();
+        $("#addPurModal").modal("show");
+        var Exp=/^[0-9]*[1-9][0-9]*$/
+        var quantity=0;
+        $("#orderBtn").unbind('click').bind("click",function () {
+            quantity=$("#quantity").val().trim();
+            if (!Exp.test(quantity)){
+                alert("请输入您要订购的数量")
+            }else {
+                $.ajax({
+                    url:"/order/operate",
+                    data:{
+                        "drugName":drugNameStr,
+                        "quantity":quantity,
+                        "maneId":$("#maneId").val()
+                    },
+                    dataType:"text",
+                    type:"put",
+                    success:function (resp) {
+                        alert(resp)
+                        if (resp=="成功！"){
+                            $("#addPurModal").modal("hide")
+                        }
+                    }
+                })
+            }
+        })
+
+    }
+</script>
+<body>
+    <div th:id="'content'">
+        <div class="panel panel-info">
+            <div class="panel-heading">药品信息录入</div>
+            <div class="panel-body">
+
+<!--                搜索条件表单-->
+                <form>
+                    <div class="form-group col-sm-4">
+                        <label for="exampleInputEmail1">条件</label>
+                        <select class="form-control" id="reason" onchange="change()">
+                            <option th:value="'过期'">过期</option>
+                            <option th:value="'余量不足'">余量不足</option>
+
+                        </select>
+                    </div>
+                    <div class="form-group col-sm-4">
+                        <label for="num">数量</label>
+                        <input type="text" class="form-control" id="num" placeholder="请输入数量" disabled="disabled">
+                    </div>
+
+                </form>
+                <div class="col-sm-3" style="margin-top: 4px">
+                    <label for="search"></label>
+                    <button class="btn btn-primary btn-block" th:id="'search'">查询</button>
+                </div>
+
+<!--                横线-->
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+<!--                表格-->
+                <table class="table table-hover table-striped" style="text-align: center">
+                    <thead style="font-weight: bolder">
+                        <tr class="danger">
+                            <td>药品编号</td>
+                            <td>药品名称</td>
+                            <td>药品库存</td>
+                            <td>药品类别</td>
+                            <td>生产厂商</td>
+                            <td>操作</td>
+                        </tr>
+                    </thead>
+                    <tbody th:id="'drug'">
+
+                    </tbody>
+                </table>
+
+                <div th:id="'drugPage'">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--药品详细信息的模态框-->
+    <div class="modal fade" tabindex="-1" role="dialog" th:id="'drugMsgModal'">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"><span th:id="'msgTitle'"></span></h4>
+                </div>
+                <div class="modal-body">
+                    <p>药品编号：<span th:id="'idSpan'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>药品名称：<span th:id="'idSpan1'" style="color:darkred;font-weight: bolder"></span></p>
+                    <p>单价：<span th:id="'idSpan2'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>库存：<span th:id="'idSpan3'" style="color:darkred;font-weight: bolder"></span></p>
+                    <p>药品类别：<span th:id="'idSpan4'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>药品属性：<span th:id="'idSpan5'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>生产日期：<span th:id="'idSpan6'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>有效期限：<span th:id="'idSpan7'" style="color: darkred;font-weight: bolder"></span></p>
+                    <p>生产厂商：<span th:id="'idSpan8'" style="color: darkred;font-weight: bolder"></span></p>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--    加购药品的模态框-->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" th:id="'addPurModal'">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">药品加购</h4>
+                </div>
+                <div class="modal-body">
+                    <form th:id="'drugForm'">
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">生产厂商:</label>
+                            <select class="form-control" id="maneId">
+                                <option th:each="mane:${allManufacturer}" th:value="${mane.maneId}" th:text="${mane.maneName}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity" class="control-label">数量:</label>
+                            <input type="text" class="form-control" id="quantity"></input>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" th:id="'orderBtn'">订购</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

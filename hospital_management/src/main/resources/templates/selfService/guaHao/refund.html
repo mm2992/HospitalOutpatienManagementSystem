@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>退费</title>
+</head>
+<script type="text/javascript">
+    $(function(){
+        $("#searchBtn").click(function () {
+            var idCard=$("#idCard").val().trim();
+            if (idCard==""){
+                alert("请输入身份证号..")
+            }else {
+                searchPatient(idCard);
+
+            }
+        })
+    })
+
+    // 查找对应患者的方法
+    function searchPatient(idCard) {
+        $.ajax({
+            url:"/patient/getPatientById",
+            data:{
+                "idCard":idCard
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var idCard="'"+resp.idCard+"'";
+                var html="";
+            html+='<tr>'
+            html+='<td>'+resp.idCard+'</td>'
+            html+='<td>'+resp.patientName+'</td>'
+            html+='<td>'+resp.deptName+'</td>'
+            html+='<td>'+resp.patientNo+'</td>'
+            html+='<td>'+resp.status+'</td>'
+            html+='<td>'+resp.balance+'</td>'
+            html+='<td><button class="btn btn-danger" onclick="refund('+idCard+','+resp.status+')">退费&nbsp;/&nbsp;注销</button></td>'
+            html+='</tr>'
+
+            $("#patientPage").html(html);
+
+            }
+        })
+    }
+
+    function refund(idCard,status) {
+        $.ajax({
+            url:"/patient/refund",
+            data: {
+                "idCard":idCard,
+                "status":status
+            },
+            dataType: "text",
+            type: "delete",
+            success:function (resp) {
+                alert(resp)
+            }
+        })
+    }
+</script>
+<body>
+
+<div th:id="'content'" class="col-sm-offset-2 col-sm-12" style="margin-top: -21.9%">
+
+    <div class="panel panel-info" style="width: 70%">
+        <div class="panel-heading"><h4>退费/注销</h4></div>
+        <div class="panel-body">
+            <div style="float: left;margin-left: 245px">
+                <input type="text" class="form-control" id="idCard" placeholder="请输入身份证号..." style="width: 100%;" ></input>
+            </div>
+            <div style="float: right;margin-right: 260px">
+                <button class="btn btn-primary" th:id="'searchBtn'">查询</button>
+            </div>
+
+            <div class="col-sm-12">
+                <hr>
+            </div>
+
+            <div class="col-sm-12">
+                <table class="table table-bordered table-hover">
+                    <thead style="text-align: center;font-size: 15px;font-weight: bolder" >
+                    <tr class="success">
+                        <td>身份证号</td>
+                        <td>姓名</td>
+                        <td>就诊科室</td>
+                        <td>就诊号码</td>
+                        <td>就诊状态</td>
+                        <td>账户余额</td>
+                        <td>操作</td>
+
+                    </tr>
+                    </thead>
+                    <tbody style="text-align: center" th:id="'patientPage'">
+
+                    </tbody>
+
+
+                </table>
+
+                <div th:id="'prePageList'">
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.OutRecordsMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.OutRecords">
+    <id column="record_id" jdbcType="VARCHAR" property="recordId" />
+    <result column="drug_id" jdbcType="INTEGER" property="drugId" />
+    <result column="drug_name" jdbcType="VARCHAR" property="drugName" />
+    <result column="quantity" jdbcType="INTEGER" property="quantity" />
+    <result column="mane_id" jdbcType="VARCHAR" property="maneId" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="operate_by" jdbcType="VARCHAR" property="operateBy" />
+    <result column="out_time" jdbcType="VARCHAR" property="outTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    record_id, drug_id, drug_name, quantity, mane_id, reason, operate_by, out_time, remark
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from outrecords
+    where record_id = #{recordId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="integer">
+    delete from outrecords
+    where record_id = #{recordId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.OutRecords" useGeneratedKeys="true">
+    insert into outrecords ( drug_id, drug_name,
+      quantity, mane_id, reason, 
+      operate_by, out_time, remark
+      )
+    values ( #{drugId,jdbcType=VARCHAR}, #{drugName,jdbcType=VARCHAR},
+      #{quantity,jdbcType=INTEGER}, #{maneId,jdbcType=VARCHAR}, #{reason,jdbcType=VARCHAR}, 
+      #{operateBy,jdbcType=VARCHAR}, #{outTime,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.OutRecords">
+    insert into outrecords
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="recordId != null">
+        record_id,
+      </if>
+      <if test="drugId != null">
+        drug_id,
+      </if>
+      <if test="drugName != null">
+        drug_name,
+      </if>
+      <if test="quantity != null">
+        quantity,
+      </if>
+      <if test="maneId != null">
+        mane_id,
+      </if>
+      <if test="reason != null">
+        reason,
+      </if>
+      <if test="operateBy != null">
+        operate_by,
+      </if>
+      <if test="outTime != null">
+        out_time,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="recordId != null">
+        #{recordId,jdbcType=INTEGER},
+      </if>
+      <if test="drugId != null">
+        #{drugId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugName != null">
+        #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="quantity != null">
+        #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="maneId != null">
+        #{maneId,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="operateBy != null">
+        #{operateBy,jdbcType=VARCHAR},
+      </if>
+      <if test="outTime != null">
+        #{outTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.OutRecords">
+    update outrecords
+    <set>
+      <if test="drugId != null">
+        drug_id = #{drugId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugName != null">
+        drug_name = #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="quantity != null">
+        quantity = #{quantity,jdbcType=INTEGER},
+      </if>
+      <if test="maneId != null">
+        mane_id = #{maneId,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        reason = #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="operateBy != null">
+        operate_by = #{operateBy,jdbcType=VARCHAR},
+      </if>
+      <if test="outTime != null">
+        out_time = #{outTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where record_id = #{recordId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.OutRecords">
+    update outrecords
+    set drug_id = #{drugId,jdbcType=VARCHAR},
+      drug_name = #{drugName,jdbcType=VARCHAR},
+      quantity = #{quantity,jdbcType=INTEGER},
+      mane_id = #{maneId,jdbcType=VARCHAR},
+      reason = #{reason,jdbcType=VARCHAR},
+      operate_by = #{operateBy,jdbcType=VARCHAR},
+      out_time = #{outTime,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR}
+    where record_id = #{recordId,jdbcType=INTEGER}
+  </update>
+
+<!--  根据条件查询符合条件的记录的总条数-->
+<select id="getCount" resultType="integer">
+  select count(*) from outRecords
+  <where>
+    <if test="drugId!=null and drugId!=''">
+      drug_id like '%' #{drugId} '%'
+    </if>
+    <if test="drugName!=null and drugName!=''">
+      and drug_name like '%' #{drugName} '%'
+    </if>
+
+    <if test="reason!=null and reason!=''">
+      and reason=#{reason}
+    </if>
+    <if test="outTime!=null and outTime!=''">
+      and out_Time &lt; #{outTime}
+    </if>
+  </where>
+</select>
+
+<!--  查询所有符合要求的数据-->
+<select id="selectRecordPageList" resultType="com.graduate.hospital.vo.OutRecordsVo">
+  select d.record_id,d.drug_id,d.drug_name,d.quantity,d.reason,d.operate_by,d.out_time,d.remark,m.mane_name
+from outrecords d join manufacturer m on  d.mane_id=m.mane_id
+
+  <where>
+    <if test="outRecord.drugId!=null and outRecord.drugId!=''">
+      d.drug_id like '%' #{outRecord.drugId} '%'
+    </if>
+    <if test="outRecord.drugName!=null and outRecord.drugName!=''">
+      and d.drug_name like '%' #{outRecord.drugName} '%'
+    </if>
+
+    <if test="outRecord.reason!=null and outRecord.reason!=''">
+      and d.reason=#{outRecord.reason}
+    </if>
+    <if test="outRecord.outTime!=null and outRecord.outTime!=''">
+      and d.out_Time &lt; #{outRecord.outTime}
+    </if>
+  </where>
+    limit #{skinPage},#{pageSize}
+</select>
+</mapper>

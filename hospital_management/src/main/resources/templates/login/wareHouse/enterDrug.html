@@ -1,0 +1,137 @@
+
+<script type="text/javascript">
+    $(function () {
+        $(".time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+        fillMessage();
+        $("#drugId").focus();
+        $(".form-control").focus(function () {
+            $("#error")[0].innerText="";
+        })
+
+
+    })
+
+    $("#submit").click(function () {
+        enterDrug();
+    })
+
+    //获取生产厂商和药品类别的方法
+    function fillMessage() {
+        $.ajax({
+            url:"/drug/getManuAndCate",
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                // alert(111)
+                var html="";
+                var html1="";
+                $.each(resp.drugCategory,function (i,n) {
+                    html+='<option value="'+n.categoryId+'">'+n.categoryName+'</option>'
+                })
+
+                $.each(resp.manufacturer,function (i,n) {
+                    html1+='<option value="'+n.maneId+'">'+n.maneName+'</option>'
+
+                })
+
+                $("#drugCategory").html(html);
+                $("#manufacturer").html(html1);
+            }
+        })
+    }
+
+    //提交添加的药品的信息
+    function enterDrug() {
+        if ($("#drugId").val()==""||$("#drugName").val()==""||$("#drugPrice").val()==""||$("#drugQuantity").val()==""||$("#productTime").val()==""||$("#expiryDate").val()==""){
+            $("#error")[0].innerText="请完善药品信息";
+        }else {
+            $.ajax({
+                url: "/drug/enterDrug",
+                data:{
+                    "drugId":$("#drugId").val(),
+                    "drugName":$("#drugName").val(),
+                    "drugPrice":$("#drugPrice").val(),
+                    "drugStock":$("#drugQuantity").val(),
+                    "categoryId":$("#drugCategory").val(),
+                    "productTime":$("#productTime").val(),
+                    "expiryDate":$("#expiryDate").val(),
+                    "manuId":$("#manufacturer").val(),
+                    "drugAttr":$("#drugAttr").val()
+                },
+                dataType: "text",
+                type: "post",
+                success:function (resp) {
+                        $("#error")[0].innerText=resp;
+                }
+
+            })
+        }
+    }
+</script>
+    <div th:id="'content'" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h4>药品信息录入</h4><span style="color: red" th:id="'error'"></span></div>
+            <div class="panel-body">
+                <form>
+                    <div class="form-group col-sm-6" th:style="'float:left'">
+                        <label for="drugId">编号：</label>
+                        <input type="text" class="form-control" th:id="'drugId'" placeholder="药品编号">
+                    </div>
+                    <div class="form-group col-sm-6" style="float: right">
+                        <label for="drugName">名称：</label>
+                        <input type="text" class="form-control" id="drugName" placeholder="名称">
+                    </div>
+                    <div class="form-group col-sm-6" th:style="'float:left'">
+                        <label for="drugPrice">单价：</label>
+                        <input type="text" class="form-control" th:id="'drugPrice'" placeholder="药品单价">
+                    </div>
+                    <div class="form-group col-sm-6" style="float: right">
+                        <label for="drugQuantity">数量：</label>
+                        <input type="text" class="form-control" th:id="'drugQuantity'" placeholder="数量">
+                    </div>
+                    <div class="form-group col-sm-6" th:style="'float:left'">
+                        <label for="drugCategory">类别：</label>
+                        <select class="form-control" th:id="'drugCategory'">
+                            <option>5152</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-sm-6" style="float: right">
+                        <label for="drugAttr">属性：</label>
+                        <select class="form-control" th:id="'drugAttr'">
+                            <option th:value="'非处方药'">非处方药</option>
+                            <option th:value="'处方药'">处方药</option>
+
+                        </select>
+                    </div>
+                    <div class="form-group col-sm-6" th:style="'float:left'">
+                        <label for="productTime">生产日期：</label>
+                        <input type="text" class="form-control time" th:id="'productTime'" placeholder="生产日期">
+                    </div>
+                    <div class="form-group col-sm-6" style="float: right">
+                        <label for="expiryDate">有效期限：</label>
+                        <input type="text" class="form-control time" th:id="'expiryDate'" placeholder="有效期限">
+                    </div>
+                    <div class="form-group col-sm-6" th:style="'float:left'">
+                        <label for="manufacturer">生产厂商：</label>
+                        <select class="form-control" th:id="'manufacturer'" >
+                            <option>555</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2" style="margin-left: 80%;margin-top: -6%">
+                        <button type="reset" class="btn btn-danger btn-block">撤销</button>
+                    </div>
+                </form>
+                <div class=" col-sm-2" style="margin-left: 60%;margin-top: -6%" >
+                    <button class="btn btn-success btn-block" th:id="'submit'">提交</button>
+
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,388 @@
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<script type="text/javascript">
+    $(function () {
+        //给日期输入框绑定日历组件
+        $(".Time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+
+        //查询所有的科室填充到科室框
+        getAllDept();
+
+        pageList(1,2);
+
+    })
+
+    // 点击搜索按钮按条件查询
+    $("#searchBtn").click(function () {
+        $("#qx").attr("checked",false)
+        pageList(1,2)
+    })
+
+    //点击删除按钮,删除用户
+    $("#deleteBtn").click(function () {
+        deleteDoctor();
+    })
+
+    //点击全选按钮选中当前页所有数据
+    $("#qx").click(function () {
+        $("input[name=xz]").prop("checked",this.checked)
+    })
+
+    //选中所有数据则全选按钮被选中
+    $("#pageList").on("click",$("input[name=xz]"),function () {
+        $("#qx").prop("checked",$("input[name=xz]").length==$("input[name=xz]:checked").length)
+    })
+
+    //点击修改按钮进行修改操作
+    $("#editDoctorBtn").click(function (){
+        if ($("input[name=xz]:checked").length==0){
+            alert("请选择您要修改的医生信息..")
+        }else
+        if ($("input[name=xz]:checked").length>1){
+            alert("对不起您每次最多操作一条数据..")
+        }else {
+            //填充模态框的数据
+            fillDoctorModal()
+            //打开模态框
+            $("#updateDoctorModal").modal("show");
+        }
+
+    })
+
+    //修改医生信息
+    $("#modal-updateDoctorBtn").click(function () {
+        updateDoctor();
+    })
+
+    //拿到所有的科室
+    function getAllDept() {
+        $.ajax({
+            url: "/doctor/getAllDept",
+            dataType: "json",
+            type: "get",
+            success: function (resp) {
+                var html = '<option value="000">请选择科室</option>';
+                $.each(resp, function (i, n) {
+                    html += '<option value="' + n.deptId + '">' + n.deptName + '</option>'
+                })
+
+                $("#department").html(html);
+            }
+        })
+    }
+
+
+
+
+    //分页查询的方法
+    function pageList(pageNo,pageSize) {
+        $.ajax({
+            url:"/doctor/pageList",
+            data:{
+                "pageNo":pageNo,
+                "pageSize":pageSize,
+                "doctorId":$.trim($("#doctorId").val()),
+                "doctorName":$.trim($("#doctorName").val()),
+                "deptId":$.trim($("#department").val()),
+                "entryDate":$.trim($("#entryDate").val())
+
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                var html="";
+                $.each(resp.list,function (i,n) {
+                    html+='<tr>';
+                    html+='<td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<input type="checkbox" name="xz" value="'+n.doctorId+'"></td>';
+                    html+='<td>'+n.doctorId+'</td>';
+                    html+='<td>'+n.doctorName+'</td>';
+                    html+='<td>'+n.deptName+'</td>';
+                    html+='<td>'+n.levelName+'</td>';
+                    html+='<td>'+n.entryDate+'</td>';
+                    html+='</tr>';
+                })
+
+                $("#pageList").html(html);
+
+
+                //绑定分页插件
+                var totalPages=(resp.count%pageSize==0)?(resp.count/pageSize):parseInt((resp.count/pageSize)+1);
+                $("#doctorPage").bs_pagination({
+                    currentPage: pageNo, // 页码
+                    rowsPerPage: pageSize, // 每页显示的记录条数
+                    maxRowsPerPage: 20, // 每页最多显示的记录条数
+                    totalPages: totalPages, // 总页数
+                    totalRows: resp.count, // 总记录条数
+                    visiblePageLinks: 3, // 显示几个卡片
+                    showGoToPage: true,
+                    showRowsPerPage: true,
+                    showRowsInfo: true,
+                    showRowsDefaultInfo: true,
+
+                    onChangePage : function(event, data){
+                        pageList(data.currentPage , data.rowsPerPage);
+                        $("#qx").attr("checked",false);
+                    }
+                });
+            }
+
+        })
+
+    }
+
+
+    //删除医生信息的方法
+    function deleteDoctor() {
+        var xzs=$("input[name=xz]:checked");
+        if (xzs.length==0){
+            alert("请选择您要删除的医生信息..")
+        }else {
+            if (confirm("您确定要删除这"+xzs.length+"条数据吗？")){
+                var params="";
+                //拼接字符串进行参数传递
+                for (var i=0;i<xzs.length;i++){
+                    params+="id="+$(xzs[i]).val();
+                    if (i!=xzs.length-1){
+                        params+="&";
+                    }
+
+                }
+                $.ajax({
+                    url:"/doctor/deleteDoctor?"+params,
+
+                    dataType:"json",
+                    type:"post",
+                    success:function (resp) {
+                        if(resp){
+                            alert("删除成功！")
+                            pageList(1,2);
+                        }else {
+                            alert("删除失败！")
+                        }
+                    }
+                })
+            }
+
+        }
+    }
+
+    //填充模态框数据的方法
+    function fillDoctorModal() {
+        $.ajax({
+            url:"/doctor/fillDoctorModal",
+            data:{
+                "doctorId":$("input[name=xz]:checked").val()
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                // alert($("input[name=xz]:checked").val())
+                var deptHtml='<option value="000">'+resp.doctor.deptName+'</option>'
+                var levelHtml='<option value="000">'+resp.doctor.levelName+'</option>'
+                var sexHtml='';
+
+                //科室
+                $.each(resp.deptList,function (i,n) {
+                    if (n.deptName==resp.doctor.deptName){
+                        deptHtml+='';
+                    }else {
+                        deptHtml+= '<option value="' + n.deptId + '">' + n.deptName + '</option>'
+                    }
+                })
+
+                //职称
+                $.each(resp.levelList,function (i,n) {
+                    if (n.levelName==resp.doctor.levelName){
+                        levelHtml+='';
+                    }else {
+                        levelHtml+= '<option value="' + n.levelId + '">' + n.levelName + '</option>'
+                    }
+                })
+
+                //性别
+                sexHtml+='<option value="'+resp.doctor.doctorSex+'">'+resp.doctor.doctorSex+'</option>>';
+                if (resp.doctor.doctorSex=='女'){
+                    sexHtml+='<option value="男">男</option>';
+                }else if (resp.doctor.doctorSex=='男'){
+                    sexHtml+='<option value="女">女</option>';
+                }else {
+                    sexHtml+='<option value="男">男</option>';
+                    sexHtml+='<option value="女">女</option>';
+                }
+
+                $("#modal-doctorSex").html(sexHtml);
+
+                $("#modal-department").html(deptHtml);
+                $("#modal-level").html(levelHtml);
+
+                //填充其他数据
+                $("#modal-doctorId").val(resp.doctor.doctorId)
+                $("#modal-doctorName").val(resp.doctor.doctorName)
+                $("#modal-entryDate").val(resp.doctor.entryDate)
+
+            }
+        })
+    }
+
+    //修改医生信息的方法
+    function updateDoctor() {
+        $.ajax({
+            url:"/doctor/updateDoctor",
+            data:{
+                "xzDoctorId":$("input[name=xz]:checked").val(),
+                "doctorId":$("#modal-doctorId").val().trim(),
+                "doctorName":$("#modal-doctorName").val().trim(),
+                "doctorSex":$("#modal-doctorSex").val().trim(),
+                "deptId":$("#modal-department").val().trim(),
+                "levelId":$("#modal-level").val().trim(),
+                "entryDate":$("#modal-entryDate").val().trim()
+            },
+            dataType:"json",
+            type:"post",
+            success:function (resp) {
+                if (resp){
+                    $("#updateDoctorModal").modal("hide");
+                    pageList(1,2);
+                }else {
+                    $("#message")[0].innerText="修改失败！"
+                }
+            }
+        })
+    }
+
+</script>
+<div th:id="'content'" >
+    <!--        面板-->
+    <div >
+        <div class="panel panel-primary">
+            <!-- Default panel contents -->
+            <div class="panel-heading">查看医生信息</div>
+            <div class="panel-body" th:style="'margin-bottom: 20px;margin-top: 20px'">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                            <span class="input-group-addon">编号</span>
+                            <input type="text" class="form-control" aria-label="..." th:id="'doctorId'">
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="input-group">
+                            <span class="input-group-addon">姓名</span>
+                            <input type="text" class="form-control" aria-label="..." th:id="'doctorName'">
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">科室</span>
+                            <select th:class="'form-control'" th:id="'department'"></select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">入职日期</span>
+                            <input type="text" class="form-control Time" aria-label="..." th:id="'entryDate'" placeholder="请注意日期格式">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <button  class="btn btn-info " th:id="'searchBtn'"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;查询</button>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7;width: 100%;float: right; height: 50px; position: relative;top: 5px;">
+                <div class="btn-group" style="position: relative;top: 18%">
+                    <button type="button" class="btn btn-info" id="editDoctorBtn" ><span class="glyphicon glyphicon-pencil"></span> 修改</button>
+                    <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus" ></span> 删除</button>
+                </div>
+            </div>
+            <!-- Table -->
+            <table class="table table-hover" >
+                <thead >
+                <tr class="success">
+                    <th>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<input type="checkbox" th:id="'qx'"></th>
+                    <th>编号</th>
+                    <th>姓名</th>
+                    <th>科室</th>
+                    <th>职称</th>
+                    <th>入职日期</th>
+                </tr>
+                </thead>
+                <tbody th:id="'pageList'">
+
+                </tbody>
+            </table>
+
+            <div style="height: 50px; position: relative;top: 30px;">
+                <div id="doctorPage">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--修改用户信息的模态框-->
+<div class="modal fade" tabindex="-1" role="dialog" th:id="'updateDoctorModal'">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">修改医生信息</h4>
+            </div>
+            <div class="modal-body row" style="height: 300px">
+                <div class="col-sm-4 input-group col-sm-offset-1">
+                    <span class="input-group-addon" th:id="'addon1'">编号</span>
+                    <input type="text"  class="form-control" placeholder="工号" aria-describedby="addon1" th:id="'modal-doctorId'">
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon2'">姓名</span>
+                    <input type="text"  class="form-control" placeholder="姓名" aria-describedby="addon2" th:id="'modal-doctorName'">
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-1" style="margin-top: 7%">
+                    <span class="input-group-addon" th:id="addon3">性别</span>
+                    <select class="form-control" th:id="'modal-doctorSex'">
+
+                    </select>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon4'">科室</span>
+                    <select class="form-control" th:id="'modal-department'">
+
+                    </select>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-1" style="margin-top: 7%">
+                    <span class="input-group-addon" th:id="'addon5'">职称</span>
+
+                    <select class="form-control" th:id="'modal-level'">
+
+                    </select>
+                </div>
+
+                <div class="col-sm-4 input-group col-sm-offset-7" style="margin-top: -34px">
+                    <span class="input-group-addon" th:id="'addon6'">入职日期</span>
+                    <input type="text"  class="form-control Time" placeholder="入职日期" aria-describedby="addon6" th:id="'modal-entryDate'">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <span style="float: left;color: red" th:id="'message'"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" th:id="'modal-updateDoctorBtn'">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+

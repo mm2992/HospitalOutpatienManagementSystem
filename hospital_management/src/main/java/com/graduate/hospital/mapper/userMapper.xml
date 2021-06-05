@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.User">
+    <id column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="user_sex" jdbcType="CHAR" property="userSex" />
+    <result column="user_category" jdbcType="INTEGER" property="userCategory" />
+    <result column="user_tel" jdbcType="VARCHAR" property="userTel" />
+    <result column="entry_time" jdbcType="VARCHAR" property="entryTime" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+
+  </resultMap>
+  <sql id="Base_Column_List">
+    user_id, user_name, user_sex, user_category, user_tel, entry_time,
+    password
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from user
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.User">
+    insert into user (user_id, user_name, user_sex, 
+      user_category, dept_id,
+      user_tel, entry_time, password
+      )
+    values (#{userId,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{userSex,jdbcType=CHAR}, 
+      #{userCategory,jdbcType=INTEGER},
+      #{userTel,jdbcType=VARCHAR}, #{entryTime,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.User">
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="userSex != null">
+        user_sex,
+      </if>
+      <if test="userCategory != null">
+        user_category,
+      </if>
+      <if test="userTel != null">
+        user_tel,
+      </if>
+      <if test="entryTime != null">
+        entry_time,
+      </if>
+      <if test="password != null">
+        password,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="userSex != null">
+        #{userSex,jdbcType=CHAR},
+      </if>
+      <if test="userCategory != null">
+        #{userCategory,jdbcType=INTEGER},
+      </if>
+      <if test="userTel != null">
+        #{userTel,jdbcType=VARCHAR},
+      </if>
+      <if test="entryTime != null">
+        #{entryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.User">
+    update user
+    <set>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="userSex != null">
+        user_sex = #{userSex,jdbcType=CHAR},
+      </if>
+      <if test="userCategory != null">
+        user_category = #{userCategory,jdbcType=INTEGER},
+      </if>
+      <if test="userTel != null">
+        user_tel = #{userTel,jdbcType=VARCHAR},
+      </if>
+      <if test="entryTime != null">
+        entry_time = #{entryTime,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.User">
+    update user
+    set user_name = #{userName,jdbcType=VARCHAR},
+      user_sex = #{userSex,jdbcType=CHAR},
+      user_category = #{userCategory,jdbcType=INTEGER},
+      user_tel = #{userTel,jdbcType=VARCHAR},
+      entry_time = #{entryTime,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR}
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </update>
+
+  <select id="queryUser" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where
+    user_id=#{userId}
+    and
+    password=#{password}
+  </select>
+
+<!--  查询user详细信息，与职位表联查-->
+  <select id="selectUserInfo" resultType="com.graduate.hospital.vo.UserVo">
+    select u.user_id userId,u.user_name userName,u.user_sex userSex, p.user_position userPosition,u.user_tel userTel,u.entry_time entryTime,u.password
+    from user u join position p
+    on user_id=#{userId} and u.user_category=p.user_category
+  </select>
+
+<!--  查询相匹配的数据总条数-->
+  <select id="getCountList" resultType="int">
+    select count(*)
+    from user
+    <where>
+      <if test="user.userId!=null and user.userId!=''">
+        user_id like '%' #{user.userId} '%'
+      </if>
+      <if test="user.userName!=null and user.userName!=''">
+        and user_name like '%' #{user.userName} '%'
+      </if>
+      <if test="user.entryTime!=null and user.entryTime!=''">
+        and entry_time &gt;#{user.entryTime}
+      </if>
+    </where>
+  </select>
+
+  <select id="getUserVoList" resultType="com.graduate.hospital.vo.UserVo">
+    select u.user_id userId, u.user_name userName,p.user_position userPosition,u.user_tel userTel,u.entry_time entryTime
+    from user u join position p
+    on u.user_category=p.user_category
+    <where>
+      <if test="user.userId!=null and user.userId!=''">
+        u.user_id like '%' #{user.userId} '%'
+      </if>
+      <if test="user.userName!=null and user.userName!=''">
+        and u.user_name like '%' #{user.userName} '%'
+      </if>
+      <if test="user.entryTime!=null and user.entryTime!=''">
+        and u.entry_time &gt;#{user.entryTime}
+      </if>
+    </where>
+    limit #{skinPage},#{pageSize}
+  </select>
+
+<!--  批量删除用户-->
+
+  <delete id="deleteUser">
+    delete from user where user_id in
+    <foreach collection="array" item="id" close=")" open="(" separator=",">
+      #{id}
+    </foreach>
+  </delete>
+
+<!--  修改密码-->
+  <update id="changePassword">
+    update user set password=#{newPwd} where user_id=#{userId}
+  </update>
+</mapper>

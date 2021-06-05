@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.DrugMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Drug">
+    <id column="drug_id" jdbcType="VARCHAR" property="drugId" />
+    <result column="drug_name" jdbcType="VARCHAR" property="drugName" />
+    <result column="drug_price" jdbcType="DOUBLE" property="drugPrice" />
+    <result column="drug_stock" jdbcType="INTEGER" property="drugStock" />
+    <result column="category_id" jdbcType="VARCHAR" property="categoryId" />
+    <result column="product_time" jdbcType="VARCHAR" property="productTime" />
+    <result column="expiry_date" jdbcType="VARCHAR" property="expiryDate" />
+    <result column="in_date" jdbcType="VARCHAR" property="inDate" />
+    <result column="operator_by" jdbcType="VARCHAR" property="operatorBy" />
+    <result column="manu_id" jdbcType="VARCHAR" property="manuId" />
+    <result column="drug_attr" jdbcType="VARCHAR" property="drugAttr" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    drug_id, drug_name, drug_price, drug_stock,category_id, product_time, expiry_date,
+    in_date, operator_by, manu_id, drug_attr
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from drug
+    where drug_id = #{drugId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from drug
+    where drug_id = #{drugId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Drug">
+    insert into drug (drug_id, drug_name, drug_price, 
+      drug_stock, category_id, product_time,
+      expiry_date, in_date, operator_by, 
+      manu_id, drug_attr)
+    values (#{drugId,jdbcType=VARCHAR}, #{drugName,jdbcType=VARCHAR}, #{drugPrice,jdbcType=DOUBLE}, 
+      #{drugStock,jdbcType=INTEGER}, #{categoryId,jdbcType=VARCHAR}, #{productTime,jdbcType=VARCHAR},
+      #{expiryDate,jdbcType=VARCHAR}, #{inDate,jdbcType=VARCHAR}, #{operatorBy,jdbcType=VARCHAR}, 
+      #{manuId,jdbcType=VARCHAR}, #{drugAttr,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Drug">
+    insert into drug
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="drugId != null">
+        drug_id,
+      </if>
+      <if test="drugName != null">
+        drug_name,
+      </if>
+      <if test="drugPrice != null">
+        drug_price,
+      </if>
+      <if test="drugStock != null">
+        drug_stock,
+      </if>
+      <if test="categoryId != null">
+        category_id,
+      </if>
+      <if test="productTime != null">
+        product_time,
+      </if>
+      <if test="expiryDate != null">
+        expiry_date,
+      </if>
+      <if test="inDate != null">
+        in_date,
+      </if>
+      <if test="operatorBy != null">
+        operator_by,
+      </if>
+      <if test="manuId != null">
+        manu_id,
+      </if>
+      <if test="drugAttr != null">
+        drug_attr,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="drugId != null">
+        #{drugId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugName != null">
+        #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="drugPrice != null">
+        #{drugPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="drugStock != null">
+        #{drugStock,jdbcType=INTEGER},
+      </if>
+      <if test="categoryId != null">
+        #{categoryId,jdbcType=VARCHAR},
+      </if>
+      <if test="productTime != null">
+        #{productTime,jdbcType=VARCHAR},
+      </if>
+      <if test="expiryDate != null">
+        #{expiryDate,jdbcType=VARCHAR},
+      </if>
+      <if test="inDate != null">
+        #{inDate,jdbcType=VARCHAR},
+      </if>
+      <if test="operatorBy != null">
+        #{operatorBy,jdbcType=VARCHAR},
+      </if>
+      <if test="manuId != null">
+        #{manuId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugAttr != null">
+        #{drugAttr,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Drug">
+    update drug
+    <set>
+      <if test="drugName != null">
+        drug_name = #{drugName,jdbcType=VARCHAR},
+      </if>
+      <if test="drugPrice != null">
+        drug_price = #{drugPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="drugStock != null">
+        drug_stock = #{drugStock,jdbcType=INTEGER},
+      </if>
+      <if test="categoryId != null">
+        categoryId = #{categoryId,jdbcType=VARCHAR},
+      </if>
+      <if test="productTime != null">
+        product_time = #{productTime,jdbcType=VARCHAR},
+      </if>
+      <if test="expiryDate != null">
+        expiry_date = #{expiryDate,jdbcType=VARCHAR},
+      </if>
+      <if test="inDate != null">
+        in_date = #{inDate,jdbcType=VARCHAR},
+      </if>
+      <if test="operatorBy != null">
+        operator_by = #{operatorBy,jdbcType=VARCHAR},
+      </if>
+      <if test="manuId != null">
+        manu_id = #{manuId,jdbcType=VARCHAR},
+      </if>
+      <if test="drugAttr != null">
+        drug_attr = #{drugAttr,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where drug_id = #{drugId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Drug">
+    update drug
+    set drug_name = #{drugName,jdbcType=VARCHAR},
+      drug_price = #{drugPrice,jdbcType=DOUBLE},
+      drug_stock = #{drugStock,jdbcType=INTEGER},
+      category_id = #{categoryId,jdbcType=VARCHAR},
+      product_time = #{productTime,jdbcType=VARCHAR},
+      expiry_date = #{expiryDate,jdbcType=VARCHAR},
+      in_date = #{inDate,jdbcType=VARCHAR},
+      operator_by = #{operatorBy,jdbcType=VARCHAR},
+      manu_id = #{manuId,jdbcType=VARCHAR},
+      drug_attr = #{drugAttr,jdbcType=VARCHAR}
+    where drug_id = #{drugId,jdbcType=VARCHAR}
+  </update>
+
+<!--  根据条件查询符合条件的总记录数-->
+  <select id="getCountSelected" resultType="int">
+    select count(*) from drug
+    <where>
+      <if test="drugName!=null and drugName!=''">
+        drug_name like '%' #{drugName} '%'
+      </if>
+      <if test="manuId!=null and manuId!=''">
+        and manu_id like '%' #{manuId} '%'
+      </if>
+      <if test="categoryId!=null and categoryId!=''">
+        and category_id like '%' #{categoryId} '%'
+      </if>
+    </where>
+  </select>
+
+  <select id="getDrugsSelected" resultType="com.graduate.hospital.vo.DrugVo">
+    select d.drug_id,d.drug_name,d.drug_price,d.drug_stock, d.product_time,d.expiry_date,d.in_date,d.operator_by,d. drug_attr,c.category_name,m.mane_name
+    from drug d
+    join drugcategory c
+    on d.category_id=c.category_id
+    join manufacturer m
+    on d.manu_id=m.mane_id
+    <where>
+      <if test="drug.drugName!=null and drug.drugName!=''">
+        d.drug_name like '%' #{drug.drugName} '%'
+      </if>
+      <if test="drug.manuId!=null and drug.manuId!=''">
+        and d.manu_id = #{drug.manuId}
+      </if>
+      <if test="drug.categoryId!=null and drug.categoryId!=''">
+        and d.category_id = #{drug.categoryId}
+      </if>
+    </where>
+    limit #{skinPage},#{pageSize}
+  </select>
+
+<!--  查单条数据三表联查-->
+  <select id="getOneDrugVo" resultType="com.graduate.hospital.vo.DrugVo">
+    select d.drug_id,d.drug_name,d.drug_price,d.drug_stock, d.product_time,d.expiry_date,d.in_date,d.operator_by,d. drug_attr,c.category_name,m.mane_name
+    from drug d
+    join drugcategory c
+        on d.category_id=c.category_id
+    join manufacturer m
+        on d.manu_id=m.mane_id
+    where d.drug_id=#{drugId}
+  </select>
+
+<!--  根据日期查总条数-->
+  <select id="getCountByDate" resultType="integer">
+    select count(*) from drug where expiry_date &lt; #{date}
+  </select>
+
+  <!--  根据日期查数据-->
+  <select id="selectByDate" resultType="com.graduate.hospital.vo.DrugVo">
+    select d.drug_id,d.drug_name,d.drug_price,d.drug_stock, d.product_time,d.expiry_date,d.in_date,d.operator_by,d. drug_attr,c.category_name,m.mane_name
+    from drug d
+    join drugcategory c
+    on d.category_id=c.category_id
+    join manufacturer m
+    on d.manu_id=m.mane_id
+   <where>
+   <if test="date!=null">
+     d.expiry_date &lt; #{date}
+   </if>
+   </where>
+
+   order by d.expiry_date asc
+    limit #{skinPage},#{pageSize}
+  </select>
+
+<!--  根据库存查-->
+<select id="getCountByStock" resultType="integer">
+  select count(*) from drug where drug_stock &lt; #{stock}
+</select>
+
+<!--  根据库存查-->
+<select id="selectByStock" resultType="com.graduate.hospital.vo.DrugVo">
+  select d.drug_id,d.drug_name,d.drug_price,d.drug_stock, d.product_time,d.expiry_date,d.in_date,d.operator_by,d. drug_attr,c.category_name,m.mane_name
+  from drug d
+  join drugcategory c
+  on d.category_id=c.category_id
+  join manufacturer m
+  on d.manu_id=m.mane_id
+ <where>
+       d.drug_stock &lt; #{stock}
+ </where>
+  order by d.drug_id asc
+  limit #{skinPage},#{pageSize}
+</select>
+
+
+<!--  查看药品的库存量-->
+  <select id="getStockById" resultType="integer">
+    select drug_stock from drug where drug_id=#{drugId}
+  </select>
+
+<!--  更新库存-->
+  <update id="updateStock">
+    update drug set drug_stock=#{newStock} where drug_id=#{drugId}
+  </update>
+</mapper>

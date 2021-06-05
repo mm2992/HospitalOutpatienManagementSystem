@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.LevelMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.Level">
+    <id column="level_id" jdbcType="VARCHAR" property="levelId" />
+    <result column="level_name" jdbcType="VARCHAR" property="levelName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    level_id, level_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from level
+    where level_id = #{levelId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from level
+    where level_id = #{levelId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.Level">
+    insert into level (level_id, level_name)
+    values (#{levelId,jdbcType=VARCHAR}, #{levelName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.Level">
+    insert into level
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="levelId != null">
+        level_id,
+      </if>
+      <if test="levelName != null">
+        level_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="levelId != null">
+        #{levelId,jdbcType=VARCHAR},
+      </if>
+      <if test="levelName != null">
+        #{levelName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.Level">
+    update level
+    <set>
+      <if test="levelName != null">
+        level_name = #{levelName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where level_id = #{levelId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.Level">
+    update level
+    set level_name = #{levelName,jdbcType=VARCHAR}
+    where level_id = #{levelId,jdbcType=VARCHAR}
+  </update>
+
+<!--  查询所有的职称-->
+  <select id="getAllLevel" resultType="com.graduate.hospital.model.Level">
+    select level_id levelId,level_name levelName from level
+  </select>
+</mapper>

@@ -1,0 +1,156 @@
+
+<script type="text/javascript">
+    $(function () {
+        // 绑定日历组件
+        $(".time").datetimepicker({
+            minView:"month",
+            language:'zh-CN',
+            format:"yyyy-mm-dd",
+            autoclose:true,
+            todayBtn:true,
+            pickerPosition:"botton-left"
+        });
+
+        //页面加载完毕后自动获得焦点
+        $("#doctorId").focus()
+
+        //页面加载完毕后铺入职称、科室
+        fill();
+
+        isEmpty();
+
+        //点击添加按钮提交添加信息
+        $("#addBtn").click(function () {
+            addDoctor();
+        })
+
+    })
+
+    //填充职称和科室的方法
+    function fill() {
+        $.ajax({
+            url:"/doctor/fillMsg",
+            type:"get",
+            dataType:"json",
+            success:function (resp) {
+                var html="";
+                var html1="";
+                $.each(resp.deptList,function (i,n) {
+                    html+='<option value="'+n.deptId+'">'+n.deptName+'</option>'
+               })
+                $.each(resp.levelList,function (i,n) {
+                    html1+='<option value="'+n.levelId+'">'+n.levelName+'</option>'
+                })
+
+                $("#department").html(html);
+                $("#jobTitle").html(html1);
+            }
+        })
+
+    }
+
+    //判断输入的值是否为空
+    function isEmpty() {
+        $("#doctorId").blur(function () {
+            if ($("#doctorId").val().trim()==""){
+                // $("#idSpan").html("<p>医生编号不能为空！</p>")
+
+                $("#idSpan")[0].innerText="医生编号不能为空！"
+
+            }
+        })
+
+        $("#password").blur(function () {
+            if ($("#password").val().trim()==""){
+                // $("#pwdSpan").html("<p>初始密码不能为空！</p>")
+                $("#pwdSpan")[0].innerText="初始密码不能为空！";
+
+            }
+        })
+
+        //获得焦点后清空下方提示信息
+
+        $("#doctorId").focus(function () {
+            $("#idSpan")[0].innerText=""
+        })
+
+        $("#password").focus(function () {
+                $("#pwdSpan")[0].innerText="";
+
+        })
+    }
+
+
+    //提交新的医生信息的方法
+    function addDoctor() {
+        if ($("#doctorId").val().trim()==""||$("#password").val().trim()==""||$("#entryData").val().trim()==""){
+            alert("请继续完善该医生信息！")
+        }else {
+           //发送请求提交表单
+            $.ajax({
+                url: "/doctor/addDoctor",
+                data:{
+                    "doctorId":$("#doctorId").val().trim(),
+                    "password":$("#password").val().trim(),
+                    "deptId":$("#department").val(),
+                    "levelId":$("#jobTitle").val(),
+                    "entryDate":$("#entryData").val()
+                },
+                type: "post",
+                dataType: "text",
+                success:function (resp) {
+                    alert(resp)
+                }
+            })
+        }
+    }
+
+
+</script>
+<div th:id="'content'">
+    <div >
+        <div class="panel panel-default">
+            <div class="panel-heading">添加医生</div>
+            <div class="panel-body">
+                <form>
+                    <div class="form-group">
+                        <label for="doctorId">医生编号：</label>
+                        <input type="text" class="form-control" id="doctorId" placeholder="请输入医生编号">
+                        <span id="idSpan" style="color: red;font-size: 15px"></span>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="password">初始密码：</label>
+                        <input type="password" class="form-control" id="password" placeholder="请设置初始密码">
+                        <span id="pwdSpan" style="color: red;font-size: 15px"></span>
+                    </div>
+
+                    <div class="form-group ">
+                        <label for="department">所属科室：</label>
+                        <select class="form-control" id="department">
+
+                        </select>
+                    </div>
+                    <div class="form-group col-sm-4 col-sm-offset-1">
+                        <label for="jobTitle">职称：</label>
+                        <select  class="form-control" id="jobTitle">
+
+                        </select>
+                    </div>
+
+                    <div class="form-group col-sm-4 col-sm-offset-1">
+                        <label for="entryData">入职日期：</label>
+                        <input type="text" class="form-control time" id="entryData" placeholder="入职时间">
+                    </div>
+
+                    <div class="col-sm-3" style="margin-top: 5%;float:right;margin-right: 150px">
+                        <button class="btn btn-danger btn-block" type="reset">取消</button>
+                    </div>
+                </form>
+                <div class="col-sm-3 " style="margin-top: 5%;float: left;margin-left: 100px;">
+                    <button class="btn btn-info btn-block" id="addBtn">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

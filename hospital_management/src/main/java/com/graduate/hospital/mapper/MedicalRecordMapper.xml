@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graduate.hospital.mapper.MedicalRecordMapper">
+  <resultMap id="BaseResultMap" type="com.graduate.hospital.model.MedicalRecord">
+    <id column="patient_id" jdbcType="VARCHAR" property="patientId" />
+    <result column="patient_name" jdbcType="VARCHAR" property="patientName" />
+    <result column="patient_sex" jdbcType="VARCHAR" property="patientSex" />
+    <result column="dept_id" jdbcType="VARCHAR" property="deptId" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="see_time" jdbcType="VARCHAR" property="seeTime" />
+    <result column="doctor_name" jdbcType="VARCHAR" property="doctorName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    patient_id, patient_name, patient_sex, dept_id, description, see_time, doctor_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from medicalrecord
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from medicalrecord
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.graduate.hospital.model.MedicalRecord">
+    insert into medicalrecord (patient_id, patient_name, patient_sex, 
+      dept_id, description, see_time, 
+      doctor_name)
+    values (#{patientId,jdbcType=VARCHAR}, #{patientName,jdbcType=VARCHAR}, #{patientSex,jdbcType=VARCHAR}, 
+      #{deptId,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{seeTime,jdbcType=VARCHAR}, 
+      #{doctorName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.graduate.hospital.model.MedicalRecord">
+    insert into medicalrecord
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="patientId != null">
+        patient_id,
+      </if>
+      <if test="patientName != null">
+        patient_name,
+      </if>
+      <if test="patientSex != null">
+        patient_sex,
+      </if>
+      <if test="deptId != null">
+        dept_id,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+      <if test="seeTime != null">
+        see_time,
+      </if>
+      <if test="doctorName != null">
+        doctor_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="patientId != null">
+        #{patientId,jdbcType=VARCHAR},
+      </if>
+      <if test="patientName != null">
+        #{patientName,jdbcType=VARCHAR},
+      </if>
+      <if test="patientSex != null">
+        #{patientSex,jdbcType=VARCHAR},
+      </if>
+      <if test="deptId != null">
+        #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="seeTime != null">
+        #{seeTime,jdbcType=VARCHAR},
+      </if>
+      <if test="doctorName != null">
+        #{doctorName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.graduate.hospital.model.MedicalRecord">
+    update medicalrecord
+    <set>
+      <if test="patientName != null">
+        patient_name = #{patientName,jdbcType=VARCHAR},
+      </if>
+      <if test="patientSex != null">
+        patient_sex = #{patientSex,jdbcType=VARCHAR},
+      </if>
+      <if test="deptId != null">
+        dept_id = #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="seeTime != null">
+        see_time = #{seeTime,jdbcType=VARCHAR},
+      </if>
+      <if test="doctorName != null">
+        doctor_name = #{doctorName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.graduate.hospital.model.MedicalRecord">
+    update medicalrecord
+    set patient_name = #{patientName,jdbcType=VARCHAR},
+      patient_sex = #{patientSex,jdbcType=VARCHAR},
+      dept_id = #{deptId,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      see_time = #{seeTime,jdbcType=VARCHAR},
+      doctor_name = #{doctorName,jdbcType=VARCHAR}
+    where patient_id = #{patientId,jdbcType=VARCHAR}
+  </update>
+</mapper>

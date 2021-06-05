@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>打印药方信息</title>
+</head>
+<script type="text/javascript">
+    $(function () {
+        $("#printBtn").click(function () {
+            var patientId= $("#patientId").val().trim();
+            if (patientId==""){
+                alert("请输入身份证号码..")
+            }else {
+                print(patientId)
+            }
+        })
+    })
+
+
+
+    /**
+     * 打印患者的药方信息
+     * @param patientId
+     */
+    function print(patientId) {
+        $.ajax({
+            url:"/patient/print",
+            data: {
+                "patientId": patientId
+            },
+            dataType:"json",
+            type:"get",
+            success:function (resp) {
+                if (!resp.flag){
+                    $("#resultDiv").html("<p>"+resp.msg+"</p>")
+                }else {
+                    $("#patientName").text(resp.patient.patientName);
+                    $("#patientAge").text(resp.age);
+                    $("#patientSex").text(resp.patient.patientSex);
+                    $("#deptName").text(resp.patient.deptName);
+                    $("#doctorName").text(resp.doctorName);
+                    $("#zhengZhuang").text(resp.description);
+                    $("#seeTime").text(resp.seeTime)
+
+                    var m=0;
+                    var html="";
+                    $.each(resp.list,function (i,n) {
+                        m+=1;
+                        html+='<tr>'
+                        html+='<td>'+m+'</td>'
+                        html+='<td>'+n.drugName+'</td>'
+                        html+='<td>'+n.quantity+'</td>'
+                        html+='<td>'+n.drugPrice+'</td>'
+                        html+='<td>'+n.totalPrice+'</td>'
+                        html+='<td>'+n.doctorOrder+'</td>'
+                        html+='</tr>'
+
+                    })
+
+                    $("#preResult").html(html);
+
+
+
+
+
+                }
+            }
+        })
+
+    }
+</script>
+<body>
+    <div class="row">
+        <div class="col-sm-3 col-sm-offset-4">
+            <form class="form-group">
+                <input type="text" class="form-control" placeholder="请输入身份证号." th:id="'patientId'">
+            </form>
+        </div>
+        <div class="col-sm-1 ">
+            <button class="btn btn-success" th:id="'printBtn'">打印</button>
+        </div>
+
+        <div class="col-sm-12">
+            <hr>
+        </div>
+
+        <div class="col-sm-12" th:id="'resultDiv'">
+            <label for="xinXi" style="color: darkolivegreen;font-weight: bolder;font-size: 20px;text-align: center">xx医院门诊检验单：</label>
+
+            <div th:id="'xinXi'">
+
+                <div class="col-sm-2 col-sm-offset-1">
+                    <label for="patientName">姓名：</label>
+                    <span th:id="'patientName'"></span>
+                </div>
+                <div class="col-sm-2">
+                    <label for="patientAge">年龄：</label>
+                    <span th:id="'patientAge'"></span>岁
+                </div>
+                <div class="col-sm-2">
+                    <label for="patientSex">性别：</label>
+                    <span th:id="'patientSex'"></span>
+                </div>
+                <div class="col-sm-2">
+                    <label for="deptName">科室：</label>
+                    <span th:id="'deptName'"></span>
+                </div>
+                <div class="col-sm-2">
+                    <label for="doctorName">主治医师：</label>
+                    <span th:id="'doctorName'"></span>
+                </div>
+                <p>
+                <div class="col-sm-5 col-sm-offset-1">
+                    <label for="zhengZhuang">症状：</label>
+                    <span th:id="'zhengZhuang'"></span>
+                </div>
+                <div class="col-sm-4 ">
+                    <label for="seeTime">就诊时间：</label>
+                    <span th:id="'seeTime'"></span>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <hr>
+            </div>
+
+            <table class=" table table-hover table-striped" id="preTable">
+                <thead style="text-align: center;font-weight: bolder">
+                    <tr>
+                        <td>#</td>
+                        <td>药品名称</td>
+                        <td>数量(盒/瓶)</td>
+                        <td>单价(元)</td>
+                        <td>总价(元)</td>
+                        <td>医嘱</td>
+                    </tr>
+                </thead>
+                <tbody style="text-align: center" th:id="'preResult'">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
