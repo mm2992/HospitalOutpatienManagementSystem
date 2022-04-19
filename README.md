@@ -1,5 +1,0 @@
-# HospitalOutpatienManagementSystem
-HospitalOutpatienManagementSystem
-医院门诊管理系统采用Java编程语言，在Intellij IDEA集成开发环境下使用SpringBoot作为后台框架，通过MyBatis框架实现系统与MySQL数据库的交互，实现系统的主要逻辑功能。
-前端则集成thymeleaf模板引擎并使用Html5、bootStrap框架完成页面的整体布局设计。
-系统功能包括：在线挂号、查看挂号信息、在线缴费、退费、用户的删除、添加、修改、用户个人信息的编辑、药品信息的录入、删除、修改、药品的进货、退货、销售管理、医生开药方等功能。
